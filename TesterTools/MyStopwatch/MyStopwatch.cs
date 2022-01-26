@@ -15,7 +15,7 @@ namespace SNShien.Common.TesterTools
 
         private static string DefaultFormat = "MethodName : {0}, TimerTest = {1} {2}";
 
-        public static void TimerTest(Action process, TimeUnit timeunit = TimeUnit.Milliseconds, string methodName = null)
+        public static long TimerTest(Action process, TimeUnit timeunit = TimeUnit.Milliseconds, string methodName = null)
         {
             Stopwatch _stopwatch = new Stopwatch();
 
@@ -43,6 +43,7 @@ namespace SNShien.Common.TesterTools
             }
 
             UnityEngine.Debug.Log(string.Format(DefaultFormat, _methodName, _timeValue, _unitName));
+            return _timeValue;
         }
     }
 }
