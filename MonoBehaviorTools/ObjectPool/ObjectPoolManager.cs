@@ -75,6 +75,21 @@ namespace SNShien.Common.MonoBehaviorTools
             return resultObj.GetComponent<T>();
         }
 
+        public void HideAllCards(string prefabKey)
+        {
+            if (ObjectPoolTagDict.ContainsKey(prefabKey) == false)
+                return;
+
+            ObjectPoolUnit objectPoolUnit = ObjectPoolTagDict[prefabKey];
+            if (objectPoolUnit.objectPoolList == null || objectPoolUnit.objectPoolList.Count == 0)
+                return;
+
+            foreach (GameObject go in objectPoolUnit.objectPoolList)
+            {
+                go.SetActive(false);
+            }
+        }
+
         private GameObject CreateNewObject(ObjectPoolUnit unit)
         {
             GameObject newObj = GetPrefabInstantiate.InstantiateGameObject(unit.prefabReference, unit.parentHolder);
