@@ -37,11 +37,9 @@ namespace SNShien.Common.AudioTools
                 if (playbackState == PLAYBACK_STATE.PLAYING)
                     eventInstance.stop(STOP_MODE.ALLOWFADEOUT);
             }
-            else
-            {
-                eventInstance = RuntimeManager.CreateInstance(audioCollection.GetEventReference(audioKey));
-                eventInstanceTrackDict[trackIndex] = eventInstance;
-            }
+
+            eventInstance = RuntimeManager.CreateInstance(audioCollection.GetEventReference(audioKey));
+            eventInstanceTrackDict[trackIndex] = eventInstance;
 
             eventInstance.start();
         }
@@ -55,7 +53,7 @@ namespace SNShien.Common.AudioTools
         {
             if (!eventInstanceTrackDict.ContainsKey(trackIndex))
                 return;
-            
+
             EventInstance eventInstance = eventInstanceTrackDict[trackIndex];
             eventInstance.stop(stopImmediately ?
                 STOP_MODE.IMMEDIATE :
