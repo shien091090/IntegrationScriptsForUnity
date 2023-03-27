@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using System.Reflection;
 using System.Linq;
+using SNShien.Common.DataTools;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
@@ -99,7 +99,6 @@ public class ComponentFinder : EditorWindow
     }
 
     private static string _assetsfolder = @"Assets";
-    private static int typeSearchResultMax = 10;
     private static ComponentFinder componentFinder_Window;
     private static ComponentFinder_ResultView subWindow;
 
@@ -183,12 +182,12 @@ public class ComponentFinder : EditorWindow
             typeNameSearchData = null;
         else if (_onSearchTypeClicked)
         {
-            Assembly[] _targetAssemblies = GetAssembliesByType(
+            ReflectionManager.AddAssemblyStorage(
                 typeof(Button),
                 typeof(TMPro.TextMeshProUGUI),
                 typeof(MonoBehaviour));
 
-            Type[] _resultTypes = FindTypesByAssemblies(currentSearchTypeName, _targetAssemblies);
+            Type[] _resultTypes = ReflectionManager.PartialMatchSearchTypes(currentSearchTypeName);
             typeNameSearchData = new TypeNameSearchResult(currentSearchTypeName, _resultTypes);
 
         }
@@ -207,89 +206,6 @@ public class ComponentFinder : EditorWindow
             EditorGUILayout.LabelField("選擇欲搜尋的Component");
             ShowTypeNameSelection(typeNameSearchData.SearchResultTypes);
             EditorGUILayout.EndVertical();
-        }
-    }
-
-    private static Assembly[] GetAssembliesByType(params Type[] _types)
-    {
-        List<Assembly> _assemblyList = new List<Assembly>();
-
-        if (_types == null || _types.Length <= 0)
-            return _assemblyList.ToArray();
-
-        for (int i = 0; i < _types.Length; i++)
-        {
-            try
-            {
-                Assembly _assembly = _types[i].Assembly;
-
-                if (!_assemblyList.Contains(_assembly))
-                    _assemblyList.Add(_assembly);
-            }
-            catch (Exception)
-            {
-                continue;
-            }
-        }
-
-        return _assemblyList.ToArray();
-    }
-
-    private static Type[] FindTypesByAssemblies(string searchName, params Assembly[] _assemblies)
-    {
-        List<Type> _filterResult = new List<Type>();
-
-        List<Type> _similarResult = new List<Type>();
-        List<Type> _fitResult = new List<Type>();
-
-        if (_assemblies == null || _assemblies.Length <= 0)
-            return _filterResult.ToArray();
-
-        for (int i = 0; i < _assemblies.Length; i++)
-        {
-            List<Type> _similarTypes = _assemblies[i].GetTypes()
-                .Where(x => x.IsSubclassOf(typeof(MonoBehaviour)))
-                .Where(x => x.Name.Contains(searchName))
-                .ToList();
-
-            if (_similarTypes == null || _similarTypes.Count <= 0)
-                continue;
-
-            FillUpTypeList(_similarResult, _similarTypes, typeSearchResultMax);
-
-            List<Type> _fitTypes = _similarTypes
-                .Where(x => x.Name == searchName)
-                .ToList();
-
-            if (_fitTypes != null && _fitTypes.Count > 0)
-                FillUpTypeList(_fitResult, _fitTypes, typeSearchResultMax);
-
-        }
-
-        FillUpTypeList(_filterResult, _fitResult, typeSearchResultMax);
-        FillUpTypeList(_filterResult, _similarResult, typeSearchResultMax);
-
-        return _filterResult.ToArray();
-
-    }
-
-    private static void FillUpTypeList(List<Type> target, List<Type> source, int maxLength)
-    {
-        if (target == null)
-            target = new List<Type>();
-
-        if (source == null || source.Count <= 0)
-            return;
-
-        for (int i = 0; i < source.Count; i++)
-        {
-            Type _type = source[i];
-
-            if (!target.Contains(_type))
-                target.Add(_type);
-
-            if (target.Count >= maxLength)
-                break;
         }
     }
 
