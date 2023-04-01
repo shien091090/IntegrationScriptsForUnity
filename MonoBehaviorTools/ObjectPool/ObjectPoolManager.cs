@@ -1,30 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
-    public class ObjectPoolManager : MonoBehaviour, IPrefabInstantiate
+    public class ObjectPoolManager : MonoBehaviour
     {
         public List<ObjectPoolUnit> objectPoolSetting; //物件池設定
-        private IPrefabInstantiate prefabInstantiate;
         private Dictionary<string, ObjectPoolUnit> ObjectPoolTagDict { set; get; } //(字典)從物件名稱查找ObjectPoolUnit
-
-        private IPrefabInstantiate GetPrefabInstantiate
-        {
-            get
-            {
-                if (prefabInstantiate == null)
-                    prefabInstantiate = this;
-
-                return prefabInstantiate;
-            }
-        }
-
-        public GameObject InstantiateGameObject(GameObject prefabReference, Transform parentHolder)
-        {
-            return Instantiate(prefabReference, parentHolder);
-        }
 
         private void Start()
         {
@@ -40,11 +24,6 @@ namespace SNShien.Common.MonoBehaviorTools
 
                 ObjectPoolTagDict.Add(unit.gameObjectName, unit); //建立字典
             }
-        }
-
-        public void SetPrefabInstantiateInterface(IPrefabInstantiate prefabInstantiate)
-        {
-            this.prefabInstantiate = prefabInstantiate;
         }
 
         //從物件池中取得指定物件
@@ -92,7 +71,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private GameObject CreateNewObject(ObjectPoolUnit unit)
         {
-            GameObject newObj = GetPrefabInstantiate.InstantiateGameObject(unit.prefabReference, unit.parentHolder);
+            GameObject newObj = Instantiate(unit.prefabReference, unit.parentHolder);
             unit.AddElement(newObj);
 
             return newObj;
