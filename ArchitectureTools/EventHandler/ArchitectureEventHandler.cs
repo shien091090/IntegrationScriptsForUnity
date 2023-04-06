@@ -7,14 +7,13 @@ namespace SNShien.Common.ArchitectureTools
     {
         private readonly Dictionary<Type, object> eventDict = new Dictionary<Type, object>();
 
-        public void SendEvent<T>(params object[] inputParams) where T : IArchitectureEvent
+        public void SendEvent<T>(T eventInfo) where T : IArchitectureEvent
         {
             if (!eventDict.ContainsKey(typeof(T)))
                 return;
-            
-            T paramInstance = (T)Activator.CreateInstance(typeof(T), inputParams);
+
             Action<T> eventAction = (Action<T>)eventDict[typeof(T)];
-            eventAction?.Invoke(paramInstance);
+            eventAction?.Invoke(eventInfo);
         }
 
         public void Register<T>(Action<T> eventCallback) where T : IArchitectureEvent
