@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SNShien.Common.AudioTools
 {
-    [CreateAssetMenu]
+    [CreateAssetMenu(fileName = "FmodAudioCollectionSetting", menuName = "SNShien/Create FmodAudioCollectionSetting")]
     public class FmodAudioCollectionScriptableObject : ScriptableObject, IAudioCollection
     {
         [SerializeField] private List<FmodAudioCollection> audioEventRefList;

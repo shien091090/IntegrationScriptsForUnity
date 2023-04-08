@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using FMOD;
 using FMOD.Studio;
 using FMODUnity;
-using GameCore;
-using Debug = UnityEngine.Debug;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace SNShien.Common.AudioTools
@@ -22,6 +19,11 @@ namespace SNShien.Common.AudioTools
         public void PlayOneShot(string audioKey)
         {
             RuntimeManager.PlayOneShot(audioCollection.GetEventReference(audioKey));
+        }
+
+        public void PlayOneShot(EventReference eventReference)
+        {
+            RuntimeManager.PlayOneShot(eventReference);
         }
 
         public void Play(string audioKey, int trackIndex = 0)
