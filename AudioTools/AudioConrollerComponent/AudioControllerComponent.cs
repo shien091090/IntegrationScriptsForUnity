@@ -13,25 +13,87 @@ namespace SNShien.Common.AudioTools
 
         public void SetupRegisterAudioEvent(IEventRegister eventRegister)
         {
-            MethodInfo methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerEvent");
-            if (methodInfo == null || audioEventSetting == null)
+            if (audioEventSetting == null)
                 return;
 
             foreach (AudioEventCollection audioEventCollection in audioEventSetting.GetAudioEventCollections)
             {
+                MethodInfo methodInfo = null;
+                switch (audioEventCollection.GetActionType)
+                {
+                    case AudioTriggerEventActionType.PlayOneShot:
+                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerPlayOneShotEvent");
+                        break;
+
+                    case AudioTriggerEventActionType.Play:
+                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerPlayEvent");
+                        break;
+
+                    case AudioTriggerEventActionType.Stop:
+                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerStopEvent");
+                        break;
+                }
+
+                if (methodInfo == null)
+                    continue;
+
                 MethodInfo method = methodInfo.MakeGenericMethod(audioEventCollection.GetTriggerEventTypeName());
                 method.Invoke(this, new object[] { eventRegister });
             }
         }
 
-        public void RegisterTriggerEvent<T>(IEventRegister eventRegister) where T : IArchitectureEvent
+        public void RegisterTriggerPlayEvent<T>(IEventRegister eventRegister) where T : IArchitectureEvent
         {
-            eventRegister.Unregister<T>(PlayAudio);
-            eventRegister.Register<T>(PlayAudio);
+            eventRegister.Unregister<T>(Play);
+            eventRegister.Register<T>(Play);
         }
 
-        private void PlayAudio<T>(T eventInfo)
+        public void RegisterTriggerStopEvent<T>(IEventRegister eventRegister) where T : IArchitectureEvent
         {
+            eventRegister.Unregister<T>(Stop);
+            eventRegister.Register<T>(Stop);
+        }
+
+        private bool CheckIsPreSetParam(IAudioTriggerEvent audioTriggerEvent)
+        {
+            return string.IsNullOrEmpty(audioTriggerEvent.PreSetParamName) == false;
+        }
+
+        private void Stop<T>(T eventInfo)
+        {
+            if (CheckIsPreSetParam((IAudioTriggerEvent)eventInfo))
+                PreSetParam((IAudioTriggerEvent)eventInfo);
+
+            int trackIndex = audioEventSetting.GetAudioEventTrackIndex(typeof(T).Name);
+            audioManager.Stop(trackIndex);
+        }
+
+        private void PreSetParam(IAudioTriggerEvent audioTriggerEvent)
+        {
+            audioManager.SetParam(audioTriggerEvent.PreSetParamName, audioTriggerEvent.PreSetParamValue);
+        }
+
+        private void Play<T>(T eventInfo)
+        {
+            if (CheckIsPreSetParam((IAudioTriggerEvent)eventInfo))
+                PreSetParam((IAudioTriggerEvent)eventInfo);
+
+            EventReference audioEventReference = audioEventSetting.GetAudioEventReference(typeof(T).Name);
+            int trackIndex = audioEventSetting.GetAudioEventTrackIndex(typeof(T).Name);
+            audioManager.Play(audioEventReference, trackIndex);
+        }
+
+        public void RegisterTriggerPlayOneShotEvent<T>(IEventRegister eventRegister) where T : IArchitectureEvent
+        {
+            eventRegister.Unregister<T>(PlayOneShot);
+            eventRegister.Register<T>(PlayOneShot);
+        }
+
+        private void PlayOneShot<T>(T eventInfo)
+        {
+            if (CheckIsPreSetParam((IAudioTriggerEvent)eventInfo))
+                PreSetParam((IAudioTriggerEvent)eventInfo);
+
             EventReference audioEventReference = audioEventSetting.GetAudioEventReference(typeof(T).Name);
             audioManager.PlayOneShot(audioEventReference);
         }

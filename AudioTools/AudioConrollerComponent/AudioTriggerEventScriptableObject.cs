@@ -10,16 +10,28 @@ namespace SNShien.Common.AudioTools
     public class AudioTriggerEventScriptableObject : SerializedScriptableObject, IAudioTriggerEventSetting
     {
         [SerializeField] private List<AudioEventCollection> audioEventCollections;
+
         public List<AudioEventCollection> GetAudioEventCollections => audioEventCollections;
-        private Dictionary<string, EventReference> audioTriggerEventDict;
+        private Dictionary<string, EventReference> audioReferenceDict;
+        private Dictionary<string, int> audioTrackIndexDict;
 
         public EventReference GetAudioEventReference(string triggerTypeName)
         {
-            if (audioTriggerEventDict == null)
-                audioTriggerEventDict = audioEventCollections.ToDictionary(x => x.GetTriggerEventTypeName().Name, x => x.GetAudioEventReference);
+            if (audioReferenceDict == null)
+                audioReferenceDict = audioEventCollections.ToDictionary(x => x.GetTriggerEventTypeName().Name, x => x.GetAudioEventReference);
 
-            return audioTriggerEventDict.ContainsKey(triggerTypeName) ?
-                audioTriggerEventDict[triggerTypeName] :
+            return audioReferenceDict.ContainsKey(triggerTypeName) ?
+                audioReferenceDict[triggerTypeName] :
+                default;
+        }
+
+        public int GetAudioEventTrackIndex(string triggerTypeName)
+        {
+            if (audioTrackIndexDict == null)
+                audioTrackIndexDict = audioEventCollections.ToDictionary(x => x.GetTriggerEventTypeName().Name, x => x.GetTrackIndex);
+
+            return audioTrackIndexDict.ContainsKey(triggerTypeName) ?
+                audioTrackIndexDict[triggerTypeName] :
                 default;
         }
     }

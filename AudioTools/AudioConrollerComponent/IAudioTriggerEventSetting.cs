@@ -5,7 +5,8 @@ namespace SNShien.Common.AudioTools
 {
     public interface IAudioTriggerEventSetting
     {
-        EventReference GetAudioEventReference(string triggerTypeName);
         List<AudioEventCollection> GetAudioEventCollections { get; }
+        EventReference GetAudioEventReference(string triggerTypeName);
+        int GetAudioEventTrackIndex(string triggerTypeName);
     }
 }

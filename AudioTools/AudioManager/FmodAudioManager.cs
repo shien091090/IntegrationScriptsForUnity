@@ -26,7 +26,7 @@ namespace SNShien.Common.AudioTools
             RuntimeManager.PlayOneShot(eventReference);
         }
 
-        public void Play(string audioKey, int trackIndex = 0)
+        public void Play(EventReference eventReference, int trackIndex = 0)
         {
             if (eventInstanceTrackDict == null)
                 eventInstanceTrackDict = new Dictionary<int, EventInstance>();
@@ -40,10 +40,16 @@ namespace SNShien.Common.AudioTools
                     eventInstance.stop(STOP_MODE.ALLOWFADEOUT);
             }
 
-            eventInstance = RuntimeManager.CreateInstance(audioCollection.GetEventReference(audioKey));
+            eventInstance = RuntimeManager.CreateInstance(eventReference);
             eventInstanceTrackDict[trackIndex] = eventInstance;
 
             eventInstance.start();
+        }
+
+        public void Play(string audioKey, int trackIndex = 0)
+        {
+            EventReference eventReference = audioCollection.GetEventReference(audioKey);
+            Play(eventReference, trackIndex);
         }
 
         public void SetParam(string audioParamKey, float paramValue)

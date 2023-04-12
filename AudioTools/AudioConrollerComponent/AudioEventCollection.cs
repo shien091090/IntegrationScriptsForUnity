@@ -5,28 +5,56 @@ using FMODUnity;
 using Sirenix.OdinInspector;
 using SNShien.Common.ArchitectureTools;
 using SNShien.Common.DataTools;
+using UnityEngine;
 
 namespace SNShien.Common.AudioTools
 {
     [Serializable]
     public struct AudioEventCollection
     {
-        [ValueDropdown("GetArchitectureEventList")]
-        public string triggerEventTypeName;
+        [SerializeField] [ValueDropdown("GetArchitectureEventList")]
+        private string triggerEventName;
 
-        public EventReference audioEventReference;
+        [SerializeField] [FoldoutGroup("$GetEventCaption")]
+        private AudioTriggerEventActionType actionType;
+
+        [SerializeField] [FoldoutGroup("$GetEventCaption")] [HideIf("actionType", AudioTriggerEventActionType.Stop)]
+        private EventReference audioEventReference;
+
+        [SerializeField] [FoldoutGroup("$GetEventCaption")] [HideIf("actionType", AudioTriggerEventActionType.PlayOneShot)]
+        private int trackIndex;
 
         private Dictionary<string, Type> architectureEventTypeNameDict;
+
+        public string GetEventCaption()
+        {
+            switch (actionType)
+            {
+                case AudioTriggerEventActionType.PlayOneShot:
+                    return $"[{actionType.ToString()}] {audioEventReference.Path}";
+
+                case AudioTriggerEventActionType.Play:
+                    return $"[{actionType.ToString()} {trackIndex}] {audioEventReference.Path}";
+
+                case AudioTriggerEventActionType.Stop:
+                    return $"[{actionType.ToString()}] {trackIndex}";
+            }
+
+            return string.Empty;
+        }
 
         public Type GetTriggerEventTypeName()
         {
             if (architectureEventTypeNameDict == null)
                 InitEventTypeNameDict();
 
-            return architectureEventTypeNameDict[triggerEventTypeName];
+            return architectureEventTypeNameDict[triggerEventName];
         }
 
         public EventReference GetAudioEventReference => audioEventReference;
+        public int GetTrackIndex => trackIndex;
+
+        public AudioTriggerEventActionType GetActionType => actionType;
 
         public IEnumerable<string> GetArchitectureEventList()
         {
@@ -39,11 +67,11 @@ namespace SNShien.Common.AudioTools
 
         private void InitEventTypeNameDict()
         {
-            if (ReflectionManager.HaveAssemblyStorageSource(typeof(IArchitectureEvent)) == false)
-                ReflectionManager.AddAssemblyStorage(typeof(IArchitectureEvent));
+            if (ReflectionManager.HaveAssemblyStorageSource(typeof(IAudioTriggerEvent)) == false)
+                ReflectionManager.AddAssemblyStorage(typeof(IAudioTriggerEvent));
 
-            List<Type> types = ReflectionManager.GetInheritedTypes<IArchitectureEvent>().ToList();
-            types.Remove(typeof(IArchitectureEvent));
+            List<Type> types = ReflectionManager.GetInheritedTypes<IAudioTriggerEvent>().ToList();
+            types.Remove(typeof(IAudioTriggerEvent));
 
             architectureEventTypeNameDict = types.ToDictionary(x => x.Name);
         }
