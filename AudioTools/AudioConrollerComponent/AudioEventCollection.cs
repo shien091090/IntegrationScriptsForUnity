@@ -28,6 +28,7 @@ namespace SNShien.Common.AudioTools
 
         public string GetEventCaption()
         {
+#if UNITY_EDITOR
             switch (actionType)
             {
                 case AudioTriggerEventActionType.PlayOneShot:
@@ -39,6 +40,7 @@ namespace SNShien.Common.AudioTools
                 case AudioTriggerEventActionType.Stop:
                     return $"[{actionType.ToString()}] {trackIndex}";
             }
+#endif
 
             return string.Empty;
         }
