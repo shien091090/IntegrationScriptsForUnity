@@ -10,7 +10,7 @@ namespace SNShien.Common.MonoBehaviorTools
         public List<ObjectPoolUnit> objectPoolSetting; //物件池設定
         private Dictionary<string, ObjectPoolUnit> ObjectPoolTagDict { set; get; } //(字典)從物件名稱查找ObjectPoolUnit
 
-        private void Start()
+        private void Awake()
         {
             if (objectPoolSetting == null || objectPoolSetting.Count <= 0)
                 return;
