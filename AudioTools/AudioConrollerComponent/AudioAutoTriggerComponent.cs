@@ -6,7 +6,7 @@ using Zenject;
 
 namespace SNShien.Common.AudioTools
 {
-    public class AudioControllerComponent : MonoBehaviour
+    public class AudioAutoTriggerComponent : MonoBehaviour
     {
         [Inject] private IAudioManager audioManager;
         [Inject] private IAudioTriggerEventSetting audioEventSetting;
@@ -22,15 +22,15 @@ namespace SNShien.Common.AudioTools
                 switch (audioEventCollection.GetActionType)
                 {
                     case AudioTriggerEventActionType.PlayOneShot:
-                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerPlayOneShotEvent");
+                        methodInfo = typeof(AudioAutoTriggerComponent).GetMethod("RegisterTriggerPlayOneShotEvent");
                         break;
 
                     case AudioTriggerEventActionType.Play:
-                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerPlayEvent");
+                        methodInfo = typeof(AudioAutoTriggerComponent).GetMethod("RegisterTriggerPlayEvent");
                         break;
 
                     case AudioTriggerEventActionType.Stop:
-                        methodInfo = typeof(AudioControllerComponent).GetMethod("RegisterTriggerStopEvent");
+                        methodInfo = typeof(AudioAutoTriggerComponent).GetMethod("RegisterTriggerStopEvent");
                         break;
                 }
 
