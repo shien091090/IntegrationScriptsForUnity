@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SNShien.Common.ArchitectureTools
+namespace SNShien.Common.ProcessTools
 {
     public class ArchitectureEventHandler : IEventInvoker, IEventRegister
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
-using SNShien.Common.ArchitectureTools;
+using SNShien.Common.ProcessTools;
 using Assert = NUnit.Framework.Assert;
 
 namespace SNShien.Common.MockTools

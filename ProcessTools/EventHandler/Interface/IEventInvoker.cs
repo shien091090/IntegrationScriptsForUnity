@@ -1,4 +1,4 @@
-namespace SNShien.Common.ArchitectureTools
+namespace SNShien.Common.ProcessTools
 {
     public interface IEventInvoker
     {

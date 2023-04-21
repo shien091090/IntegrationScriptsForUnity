@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FMODUnity;
 using Sirenix.OdinInspector;
-using SNShien.Common.ArchitectureTools;
 using SNShien.Common.DataTools;
 using UnityEngine;
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace SNShien.Common.ArchitectureTools
+namespace SNShien.Common.ProcessTools
 {
     public interface IEventRegister
     {
