@@ -4,14 +4,15 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
+using Zenject;
 using Object = UnityEngine.Object;
 
 namespace SNShien.Common.AssetTools
 {
-    public class AssetManager : MonoBehaviour, IAssetManager
+    public class LoadAssetManager : IAssetManager
     {
-        [SerializeField] private string[] loadPrefabNames;
-        [SerializeField] private string[] loadScriptableObjectNames;
+        [Inject] private ILoadAssetSetting loadAssetSetting;
+
         private readonly Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
         private Queue<LoadingAssetResource> loadAssetQueue = new Queue<LoadingAssetResource>();
         private LoadingAssetResource currentAssetInfo;
@@ -21,30 +22,29 @@ namespace SNShien.Common.AssetTools
         {
             if (!assetDict.ContainsKey(assetName))
                 return default;
-            
+
             Object obj = assetDict[assetName];
             if (obj is T result)
                 return result;
-                
+
             if (!(obj is GameObject go))
                 return default;
-                    
+
             T component = go.GetComponent<T>();
             return component != null ?
                 component :
                 default;
-
         }
 
         public void LoadAsset()
         {
             loadAssetQueue = new Queue<LoadingAssetResource>();
-            foreach (string loadPrefabName in loadPrefabNames)
+            foreach (string loadPrefabName in loadAssetSetting.GetLoadPrefabNames)
             {
                 loadAssetQueue.Enqueue(LoadingAssetResource.CreatePrefabAsset(loadPrefabName));
             }
 
-            foreach (string loadScriptableObjectName in loadScriptableObjectNames)
+            foreach (string loadScriptableObjectName in loadAssetSetting.GetLoadScriptableObjectNames)
             {
                 loadAssetQueue.Enqueue(LoadingAssetResource.CreateScriptableObjectAsset(loadScriptableObjectName));
             }
