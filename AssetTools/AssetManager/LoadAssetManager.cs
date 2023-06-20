@@ -16,6 +16,9 @@ namespace SNShien.Common.AssetTools
         private readonly Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
         private Queue<LoadingAssetResource> loadAssetQueue = new Queue<LoadingAssetResource>();
         private LoadingAssetResource currentAssetInfo;
+        private int totalAssetCount;
+
+        public event Action<LoadingProgress> OnUpdateLoadingProgress;
         public event Action OnAllAssetLoadCompleted;
 
         public T GetAsset<T>(string assetName) where T : Object
@@ -36,7 +39,7 @@ namespace SNShien.Common.AssetTools
                 default;
         }
 
-        public void LoadAsset()
+        public void StartLoadAsset()
         {
             loadAssetQueue = new Queue<LoadingAssetResource>();
             foreach (string loadPrefabName in loadAssetSetting.GetLoadPrefabNames)
@@ -49,6 +52,8 @@ namespace SNShien.Common.AssetTools
                 loadAssetQueue.Enqueue(LoadingAssetResource.CreateScriptableObjectAsset(loadScriptableObjectName));
             }
 
+            totalAssetCount = loadAssetQueue.Count;
+            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(string.Empty, 0, totalAssetCount));
             LoadAssetQueue(loadAssetQueue);
         }
 
@@ -86,6 +91,7 @@ namespace SNShien.Common.AssetTools
             if (loadedObj.Status == AsyncOperationStatus.Succeeded)
                 assetDict[loadedObj.Result.name] = loadedObj.Result;
 
+            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(loadedObj.Result.name, assetDict.Count, totalAssetCount));
             currentAssetInfo = null;
             LoadAssetQueue(loadAssetQueue);
         }
