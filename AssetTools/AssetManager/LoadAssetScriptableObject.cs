@@ -6,7 +6,10 @@ namespace SNShien.Common.AssetTools
     {
         [SerializeField] private string[] loadPrefabName;
         [SerializeField] private string[] loadScriptableObjectNames;
+        [SerializeField] private string[] loadOtherAssetNames;
+
         public string[] GetLoadPrefabNames => loadPrefabName;
         public string[] GetLoadScriptableObjectNames => loadScriptableObjectNames;
+        public string[] GetLoadOtherAssetNames => loadOtherAssetNames;
     }
 }

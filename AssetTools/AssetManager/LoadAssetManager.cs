@@ -52,6 +52,11 @@ namespace SNShien.Common.AssetTools
                 loadAssetQueue.Enqueue(LoadingAssetResource.CreateScriptableObjectAsset(loadScriptableObjectName));
             }
 
+            foreach (string assetName in loadAssetSetting.GetLoadOtherAssetNames)
+            {
+                loadAssetQueue.Enqueue(LoadingAssetResource.CreateOtherAsset(assetName));
+            }
+
             totalAssetCount = loadAssetQueue.Count;
             OnUpdateLoadingProgress?.Invoke(new LoadingProgress(string.Empty, 0, totalAssetCount));
             LoadAssetQueue(loadAssetQueue);
@@ -71,29 +76,21 @@ namespace SNShien.Common.AssetTools
             switch (currentAssetInfo.ResourceType)
             {
                 case AssetResourceType.Prefab:
-                    Addressables.LoadAssetAsync<GameObject>(currentAssetInfo.AssetName).Completed += LoadAssetCompleted;
+                    Addressables.LoadAssetAsync<GameObject>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
                     break;
 
                 case AssetResourceType.ScriptableObject:
-                    Addressables.LoadAssetAsync<ScriptableObject>(currentAssetInfo.AssetName).Completed += LoadAssetCompleted;
+                    Addressables.LoadAssetAsync<ScriptableObject>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
+                    break;
+
+                case AssetResourceType.Bytes:
+                    Addressables.LoadAssetAsync<TextAsset>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
                     break;
 
                 default:
                     LoadAssetQueue(loadAssetQueue);
                     break;
             }
-        }
-
-        private void LoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object
-        {
-            Debug.Log($"[AssetManager] LoadAssetCompleted, Name = {loadedObj.Result.name}, Status = {loadedObj.Status}");
-
-            if (loadedObj.Status == AsyncOperationStatus.Succeeded)
-                assetDict[loadedObj.Result.name] = loadedObj.Result;
-
-            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(loadedObj.Result.name, assetDict.Count, totalAssetCount));
-            currentAssetInfo = null;
-            LoadAssetQueue(loadAssetQueue);
         }
 
         private void AllAssetLoadCompleted()
@@ -110,6 +107,18 @@ namespace SNShien.Common.AssetTools
             {
                 Debug.Log($"ProviderId = {provider.ProviderId}");
             }
+        }
+
+        private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object
+        {
+            Debug.Log($"[AssetManager] LoadAssetCompleted, Name = {loadedObj.Result.name}, Status = {loadedObj.Status}");
+
+            if (loadedObj.Status == AsyncOperationStatus.Succeeded)
+                assetDict[loadedObj.Result.name] = loadedObj.Result;
+
+            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(loadedObj.Result.name, assetDict.Count, totalAssetCount));
+            currentAssetInfo = null;
+            LoadAssetQueue(loadAssetQueue);
         }
     }
 }

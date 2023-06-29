@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
+using SNShien.Common.AssetTools;
+using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace SNShien.Common.AudioTools
@@ -11,10 +13,27 @@ namespace SNShien.Common.AudioTools
         private Dictionary<int, EventInstance> eventInstanceTrackDict;
         private FMOD.Studio.System studioSystem = RuntimeManager.StudioSystem;
 
-        public FmodAudioManager(IAudioCollection audioCollection)
+        public FmodAudioManager(IAudioCollection audioCollection, IAssetManager assetManager)
         {
             this.audioCollection = audioCollection;
-            LoadBanks();
+            LoadAudioTextAsset(assetManager);
+        }
+
+        private void LoadAudioTextAsset(IAssetManager assetManager)
+        {
+            List<string> loadBankNames = audioCollection.GetLoadBankNameList;
+
+            if (loadBankNames == null)
+                return;
+
+            foreach (string bankName in loadBankNames)
+            {
+                TextAsset audioTextAsset = assetManager.GetAsset<TextAsset>(bankName);
+                if (audioTextAsset == null)
+                    continue;
+
+                RuntimeManager.LoadBank(audioTextAsset);
+            }
         }
 
         public void PlayOneShot(string audioKey)
@@ -67,19 +86,6 @@ namespace SNShien.Common.AudioTools
             eventInstance.stop(stopImmediately ?
                 STOP_MODE.IMMEDIATE :
                 STOP_MODE.ALLOWFADEOUT);
-        }
-
-        private void LoadBanks()
-        {
-            List<string> loadBankNames = audioCollection.GetLoadBankNameList;
-
-            if (loadBankNames == null)
-                return;
-
-            foreach (string bankName in loadBankNames)
-            {
-                RuntimeManager.LoadBank(bankName);
-            }
         }
     }
 }

@@ -4,6 +4,7 @@ namespace SNShien.Common.AssetTools
     {
         None,
         Prefab,
-        ScriptableObject
+        ScriptableObject,
+        Bytes
     }
 }

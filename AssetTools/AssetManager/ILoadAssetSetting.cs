@@ -4,5 +4,6 @@ namespace SNShien.Common.AssetTools
     {
         public string[] GetLoadPrefabNames { get; }
         public string[] GetLoadScriptableObjectNames { get; }
+        public string[] GetLoadOtherAssetNames { get; }
     }
 }

@@ -15,6 +15,11 @@ namespace SNShien.Common.AssetTools
             return new LoadingAssetResource(AssetResourceType.ScriptableObject, loadScriptableObjectName);
         }
 
+        public static LoadingAssetResource CreateOtherAsset(string assetName)
+        {
+            return new LoadingAssetResource(AssetResourceType.Bytes, assetName);
+        }
+
         private LoadingAssetResource(AssetResourceType type, string assetName)
         {
             ResourceType = type;
