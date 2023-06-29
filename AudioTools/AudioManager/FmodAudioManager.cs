@@ -14,6 +14,7 @@ namespace SNShien.Common.AudioTools
         public FmodAudioManager(IAudioCollection audioCollection)
         {
             this.audioCollection = audioCollection;
+            LoadBanks();
         }
 
         public void PlayOneShot(string audioKey)
@@ -66,6 +67,19 @@ namespace SNShien.Common.AudioTools
             eventInstance.stop(stopImmediately ?
                 STOP_MODE.IMMEDIATE :
                 STOP_MODE.ALLOWFADEOUT);
+        }
+
+        private void LoadBanks()
+        {
+            List<string> loadBankNames = audioCollection.GetLoadBankNameList;
+
+            if (loadBankNames == null)
+                return;
+
+            foreach (string bankName in loadBankNames)
+            {
+                RuntimeManager.LoadBank(bankName);
+            }
         }
     }
 }
