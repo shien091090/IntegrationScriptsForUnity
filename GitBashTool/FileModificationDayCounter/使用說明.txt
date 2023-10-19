@@ -1,0 +1,3 @@
+1.把"file_days_modified"文件複製到專案頂層資料夾
+2.git bash command: "./file_days_modified.sh"
+3.輸出每份Scripts有過修改的總累計天數
