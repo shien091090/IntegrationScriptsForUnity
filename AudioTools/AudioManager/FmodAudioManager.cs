@@ -9,36 +9,27 @@ namespace SNShien.Common.AudioTools
 {
     public class FmodAudioManager : IAudioManager
     {
-        private readonly IAudioCollection audioCollection;
-        private Dictionary<int, EventInstance> eventInstanceTrackDict;
         private FMOD.Studio.System studioSystem = RuntimeManager.StudioSystem;
+        private Dictionary<int, EventInstance> eventInstanceTrackDict;
+        private Dictionary<string, EventReference> audioCollectionDict;
 
-        public FmodAudioManager(IAudioCollection audioCollection, IAssetManager assetManager)
+        public List<string> GetAudioKeyList => new List<string>(audioCollectionDict.Keys);
+
+        public FmodAudioManager()
         {
-            this.audioCollection = audioCollection;
-            LoadAudioTextAsset(assetManager);
+            audioCollectionDict = new Dictionary<string, EventReference>();
         }
 
-        private void LoadAudioTextAsset(IAssetManager assetManager)
+        public void PrintAudioKeys()
         {
-            List<string> loadBankNames = audioCollection.GetLoadBankNameList;
-
-            if (loadBankNames == null)
-                return;
-
-            foreach (string bankName in loadBankNames)
-            {
-                TextAsset audioTextAsset = assetManager.GetAsset<TextAsset>(bankName);
-                if (audioTextAsset == null)
-                    continue;
-
-                RuntimeManager.LoadBank(audioTextAsset);
-            }
+            string log = string.Join(", \n", audioCollectionDict.Keys);
+            Debug.Log($"Audio Keys: {log}");
         }
 
         public void PlayOneShot(string audioKey)
         {
-            RuntimeManager.PlayOneShot(audioCollection.GetEventReference(audioKey));
+            if (audioCollectionDict.TryGetValue(audioKey, out EventReference eventReference))
+                RuntimeManager.PlayOneShot(eventReference);
         }
 
         public void PlayOneShot(EventReference eventReference)
@@ -68,8 +59,8 @@ namespace SNShien.Common.AudioTools
 
         public void Play(string audioKey, int trackIndex = 0)
         {
-            EventReference eventReference = audioCollection.GetEventReference(audioKey);
-            Play(eventReference, trackIndex);
+            if (audioCollectionDict.TryGetValue(audioKey, out EventReference eventReference))
+                Play(eventReference, trackIndex);
         }
 
         public void SetParam(string audioParamKey, float paramValue)
@@ -86,6 +77,42 @@ namespace SNShien.Common.AudioTools
             eventInstance.stop(stopImmediately ?
                 STOP_MODE.IMMEDIATE :
                 STOP_MODE.ALLOWFADEOUT);
+        }
+
+        public void InitAudioCollection()
+        {
+            audioCollectionDict = new Dictionary<string, EventReference>();
+
+            RuntimeManager.StudioSystem.getBankList(out Bank[] banks);
+            foreach (Bank bank in banks)
+            {
+                bank.getEventList(out EventDescription[] eventDescriptions);
+                foreach (EventDescription eventDescription in eventDescriptions)
+                {
+                    eventDescription.getPath(out string path);
+                    EventReference eventReference = EventReference.Find(path);
+                    string[] split = path.Split('/');
+                    string audioKey = split[split.Length - 1];
+                    audioCollectionDict.Add(audioKey, eventReference);
+                }
+            }
+        }
+
+        public void LoadAudioTextAsset(IAssetManager assetManager)
+        {
+            // List<string> loadBankNames = audioCollection.GetLoadBankNameList;
+            //
+            // if (loadBankNames == null)
+            // return;
+            //
+            // foreach (string bankName in loadBankNames)
+            // {
+            //     TextAsset audioTextAsset = assetManager.GetAsset<TextAsset>(bankName);
+            //     if (audioTextAsset == null)
+            //         continue;
+            //
+            //     RuntimeManager.LoadBank(audioTextAsset);
+            // }
         }
     }
 }
