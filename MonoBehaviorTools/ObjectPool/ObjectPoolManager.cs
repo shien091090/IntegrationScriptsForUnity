@@ -1,80 +1,94 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Zenject;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
-    public class ObjectPoolManager : MonoBehaviour
+    public class ObjectPoolManager : MonoBehaviour, IGameObjectPool
     {
         public List<ObjectPoolUnit> objectPoolSetting; //物件池設定
-        private Dictionary<string, ObjectPoolUnit> ObjectPoolTagDict { set; get; } //(字典)從物件名稱查找ObjectPoolUnit
+        private Dictionary<string, ObjectPoolUnit> objectPoolTagDict { set; get; } //(字典)從物件名稱查找ObjectPoolUnit
 
-        private void Awake()
+        public void SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
         {
-            if (objectPoolSetting == null || objectPoolSetting.Count <= 0)
+            if (objectPoolTagDict.ContainsKey(prefabName) == false)
                 return;
 
-            ObjectPoolTagDict = new Dictionary<string, ObjectPoolUnit>();
+            CheckAutoCreateHolder(prefabName);
+            GameObject go = PickUpObject(prefabName);
 
-            foreach (ObjectPoolUnit unit in objectPoolSetting)
+            if (position != default)
+                go.transform.position = position;
+
+            if (scale != default)
+                go.transform.localScale = scale;
+
+            go.SetActive(true);
+        }
+
+        private void Start()
+        {
+            if (objectPoolSetting == null || objectPoolSetting.Count <= 0)
+                return; //若有設定物件池
+
+            objectPoolTagDict = new Dictionary<string, ObjectPoolUnit>();
+
+            for (int i = 0; i < objectPoolSetting.Count; i++)
             {
-                if (ObjectPoolTagDict.ContainsKey(unit.gameObjectName))
-                    throw new System.Exception("[ERROR]物件名稱重複");
+                if (objectPoolTagDict.ContainsKey(objectPoolSetting[i].gameObjectName)) throw new System.Exception("[ERROR]物件名稱重複");
 
-                ObjectPoolTagDict.Add(unit.gameObjectName, unit); //建立字典
+                objectPoolTagDict.Add(objectPoolSetting[i].gameObjectName, objectPoolSetting[i]); //建立字典
             }
         }
 
         //從物件池中取得指定物件
-        public T PickUpObject<T>(string prefabKey)
+        public GameObject PickUpObject(string goName)
         {
-            if (!ObjectPoolTagDict.ContainsKey(prefabKey))
-                return default; //查無物件
+            if (objectPoolTagDict.ContainsKey(goName) == false)
+                return null;
 
-            GameObject resultObj = null;
-            ObjectPoolUnit unit = ObjectPoolTagDict[prefabKey];
+            GameObject _result = null;
+            ObjectPoolUnit _unit = objectPoolTagDict[goName];
 
-            if (unit.objectPoolList == null || unit.objectPoolList.Count == 0) //若物件池中無物件
+            //創立新物件(Lambda)
+            System.Action<ObjectPoolUnit> CreateNew = (ObjectPoolUnit u) =>
             {
-                resultObj = CreateNewObject(unit);
+                GameObject _go = Instantiate(u.prefabReference, u.parentHolder);
+                u.AddElement(_go);
+
+                _result = _go;
+            };
+
+            if (_unit.ObjectPoolList == null || _unit.ObjectPoolList.Count == 0) //若物件池中無物件
+            {
+                CreateNew(_unit); //創立新物件
             }
             else //若物件池中存在物件
             {
-                foreach (GameObject validObj in unit.objectPoolList.Where(x => !x.activeSelf))
+                for (int i = 0; i < _unit.ObjectPoolList.Count; i++) //尋找隱藏中(active = false)物件
                 {
-                    resultObj = validObj;
-                    break;
+                    if (!_unit.ObjectPoolList[i].activeSelf)
+                    {
+                        _result = _unit.ObjectPoolList[i];
+                        break;
+                    }
                 }
 
-                if (resultObj == null)
-                    resultObj = CreateNewObject(unit); //若所有物件皆在非隱藏狀態, 則建立新物件
+                if (_result == null) CreateNew(_unit); //若所有物件皆在非隱藏狀態, 則建立新物件
             }
 
-            return resultObj.GetComponent<T>();
+            return _result;
         }
 
-        public void HideAllCards(string prefabKey)
+        private void CheckAutoCreateHolder(string prefabName)
         {
-            if (ObjectPoolTagDict.ContainsKey(prefabKey) == false)
+            if (objectPoolTagDict.TryGetValue(prefabName, out ObjectPoolUnit unit) == false)
                 return;
 
-            ObjectPoolUnit objectPoolUnit = ObjectPoolTagDict[prefabKey];
-            if (objectPoolUnit.objectPoolList == null || objectPoolUnit.objectPoolList.Count == 0)
+            if (unit.parentHolder != null)
                 return;
 
-            foreach (GameObject go in objectPoolUnit.objectPoolList)
-            {
-                go.SetActive(false);
-            }
-        }
-
-        private GameObject CreateNewObject(ObjectPoolUnit unit)
-        {
-            GameObject newObj = Instantiate(unit.prefabReference, unit.parentHolder);
-            unit.AddElement(newObj);
-
-            return newObj;
+            unit.parentHolder = new GameObject(prefabName + "Holder").transform;
+            unit.parentHolder.parent = transform;
         }
     }
 }
