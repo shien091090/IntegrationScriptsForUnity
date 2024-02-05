@@ -86,15 +86,21 @@ namespace SNShien.Common.AudioTools
             RuntimeManager.StudioSystem.getBankList(out Bank[] banks);
             foreach (Bank bank in banks)
             {
+                bank.getPath(out string bankPath);
                 bank.getEventList(out EventDescription[] eventDescriptions);
+                List<string> audioEventList = new List<string>();
+
                 foreach (EventDescription eventDescription in eventDescriptions)
                 {
                     eventDescription.getPath(out string path);
-                    EventReference eventReference = EventReference.Find(path);
+                    audioEventList.Add(path);
+                    EventReference eventReference = RuntimeManager.PathToEventReference(path);
                     string[] split = path.Split('/');
                     string audioKey = split[split.Length - 1];
                     audioCollectionDict.Add(audioKey, eventReference);
                 }
+                
+                Debug.Log($"[FmodAudioManager] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventList)}");
             }
         }
 
