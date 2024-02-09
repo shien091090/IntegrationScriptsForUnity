@@ -20,12 +20,6 @@ namespace SNShien.Common.AudioTools
             audioCollectionDict = new Dictionary<string, EventReference>();
         }
 
-        public void PrintAudioKeys()
-        {
-            string log = string.Join(", \n", audioCollectionDict.Keys);
-            Debug.Log($"Audio Keys: {log}");
-        }
-
         public void PlayOneShot(string audioKey)
         {
             if (audioCollectionDict.TryGetValue(audioKey, out EventReference eventReference))

@@ -9,7 +9,6 @@ namespace SNShien.Common.AudioTools
         void Play(string audioKey, int trackIndex = 0);
         void Play(EventReference eventReference, int trackIndex = 0);
         void Stop(int trackIndex = 0, bool stopImmediately = false);
-        void PrintAudioKeys();
         void PlayOneShot(string audioKey);
         void PlayOneShot(EventReference eventReference);
     }
