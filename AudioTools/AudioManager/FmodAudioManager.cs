@@ -73,7 +73,7 @@ namespace SNShien.Common.AudioTools
                 STOP_MODE.ALLOWFADEOUT);
         }
 
-        public void InitAudioCollection()
+        public void InitCollectionFromProject()
         {
             audioCollectionDict = new Dictionary<string, EventReference>();
 
@@ -93,9 +93,21 @@ namespace SNShien.Common.AudioTools
                     string audioKey = split[split.Length - 1];
                     audioCollectionDict.Add(audioKey, eventReference);
                 }
-                
-                Debug.Log($"[FmodAudioManager] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventList)}");
+
+                Debug.Log($"[FmodAudioManager] [InitCollectionFromProject] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventList)}");
             }
+        }
+
+        public void InitCollectionFromSetting(IAudioCollection collectionSetting)
+        {
+            List<string> logs = new List<string>();
+            foreach (FmodAudioCollection collectionInfo in collectionSetting.GetAudioEventRefList)
+            {
+                audioCollectionDict[collectionInfo.GetAudioKey] = collectionInfo.GetEventRef;
+                logs.Add($"{collectionInfo.GetAudioKey}");
+            }
+
+            Debug.Log($"[FmodAudioManager] [InitCollectionFromSetting] audioEventList: {string.Join(",\n", logs)}");
         }
 
         public void LoadAudioTextAsset(IAssetManager assetManager)

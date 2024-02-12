@@ -12,10 +12,11 @@ namespace SNShien.Common.AudioTools
         [SerializeField] private List<FmodAudioCollection> audioEventRefList;
 
         public List<string> GetLoadBankNameList => loadBankNameList;
+        public List<FmodAudioCollection> GetAudioEventRefList => audioEventRefList;
 
         public EventReference GetEventReference(string audioKey)
         {
-            FmodAudioCollection audioCollection = audioEventRefList.FirstOrDefault(x => x.GetAudioKey == audioKey);
+            FmodAudioCollection audioCollection = GetAudioEventRefList.FirstOrDefault(x => x.GetAudioKey == audioKey);
             return audioCollection?.GetEventRef ?? default;
         }
     }
