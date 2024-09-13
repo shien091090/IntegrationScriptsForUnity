@@ -16,9 +16,9 @@ namespace SNShien.Common.AdapterTools
             collision = col;
         }
 
-        public bool CheckPhysicsOverlapCircle(Vector3 point, float radius, GameConst.GameObjectLayerType layerMask)
+        public bool CheckPhysicsOverlapCircle(Vector3 point, float radius, string layerMask)
         {
-            return Physics2D.OverlapCircle(point, radius, LayerMask.GetMask(layerMask.ToString()));
+            return Physics2D.OverlapCircle(point, radius, LayerMask.GetMask(layerMask));
         }
 
         public T GetComponent<T>()
