@@ -6,7 +6,7 @@ namespace SNShien.Common.MonoBehaviorTools
     public class ObjectPoolManager : MonoBehaviour, IGameObjectPool
     {
         public List<ObjectPoolUnit> objectPoolSetting; //物件池設定
-        private Dictionary<string, ObjectPoolUnit> objectPoolTagDict { set; get; } //(字典)從物件名稱查找ObjectPoolUnit
+        private Dictionary<string, ObjectPoolUnit> objectPoolTagDict; //(字典)從物件名稱查找ObjectPoolUnit
 
         public void SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
         {
@@ -25,11 +25,14 @@ namespace SNShien.Common.MonoBehaviorTools
             go.SetActive(true);
         }
 
-        private void Start()
+        private void Awake()
         {
-            if (objectPoolSetting == null || objectPoolSetting.Count <= 0)
-                return; //若有設定物件池
+            if (objectPoolTagDict == null)
+                Init();
+        }
 
+        private void Init()
+        {
             objectPoolTagDict = new Dictionary<string, ObjectPoolUnit>();
 
             for (int i = 0; i < objectPoolSetting.Count; i++)
@@ -89,6 +92,20 @@ namespace SNShien.Common.MonoBehaviorTools
 
             unit.parentHolder = new GameObject(prefabName + "Holder").transform;
             unit.parentHolder.parent = transform;
+        }
+
+        public void HideAll(string prefabName)
+        {
+            if (objectPoolTagDict.TryGetValue(prefabName, out ObjectPoolUnit unit) == false)
+                return;
+
+            if (unit.ObjectPoolList == null || unit.ObjectPoolList.Count == 0)
+                return;
+
+            foreach (GameObject go in unit.ObjectPoolList)
+            {
+                go.SetActive(false);
+            }
         }
     }
 }
