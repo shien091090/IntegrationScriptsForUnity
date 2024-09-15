@@ -22,8 +22,14 @@ namespace SNShien.Common.AudioTools
 
         public void PlayOneShot(string audioKey)
         {
-            if (audioCollectionDict.TryGetValue(audioKey, out EventReference eventReference))
+            if (TryGetAudioEventReference(audioKey, out EventReference eventReference))
                 RuntimeManager.PlayOneShot(eventReference);
+        }
+
+        private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
+        {
+            audioKey = audioKey.Replace("_", string.Empty).ToLower();
+            return audioCollectionDict.TryGetValue(audioKey, out eventReference);
         }
 
         public void PlayOneShot(EventReference eventReference)
@@ -53,7 +59,7 @@ namespace SNShien.Common.AudioTools
 
         public void Play(string audioKey, int trackIndex = 0)
         {
-            if (audioCollectionDict.TryGetValue(audioKey, out EventReference eventReference))
+            if (TryGetAudioEventReference(audioKey, out EventReference eventReference))
                 Play(eventReference, trackIndex);
         }
 
@@ -78,6 +84,12 @@ namespace SNShien.Common.AudioTools
             audioCollectionDict = new Dictionary<string, EventReference>();
 
             RuntimeManager.StudioSystem.getBankList(out Bank[] banks);
+            if (banks == null || banks.Length == 0)
+            {
+                Debug.Log("[FmodAudioManager] [InitCollectionFromProject] banks is null or empty");
+                return;
+            }
+
             foreach (Bank bank in banks)
             {
                 bank.getPath(out string bankPath);
@@ -87,10 +99,11 @@ namespace SNShien.Common.AudioTools
                 foreach (EventDescription eventDescription in eventDescriptions)
                 {
                     eventDescription.getPath(out string path);
-                    audioEventList.Add(path);
                     EventReference eventReference = RuntimeManager.PathToEventReference(path);
                     string[] split = path.Split('/');
                     string audioKey = split[split.Length - 1];
+                    audioKey = audioKey.Replace("_", string.Empty).ToLower();
+                    audioEventList.Add(audioKey);
                     audioCollectionDict.Add(audioKey, eventReference);
                 }
 
@@ -104,10 +117,10 @@ namespace SNShien.Common.AudioTools
             foreach (FmodAudioCollection collectionInfo in collectionSetting.GetAudioEventRefList)
             {
                 audioCollectionDict[collectionInfo.GetAudioKey] = collectionInfo.GetEventRef;
-                logs.Add($"{collectionInfo.GetAudioKey}");
+                logs.Add($"audio key: {collectionInfo.GetAudioKey}, GUID: {collectionInfo.GetEventRef.Guid}");
             }
 
-            Debug.Log($"[FmodAudioManager] [InitCollectionFromSetting] audioEventList: {string.Join(",\n", logs)}");
+            Debug.Log($"[FmodAudioManager] [InitCollectionFromSetting] audioEventList:\n {string.Join(",\n", logs)}");
         }
 
         public void LoadAudioTextAsset(IAssetManager assetManager)
