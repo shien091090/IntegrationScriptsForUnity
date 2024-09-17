@@ -3,6 +3,7 @@ using FMOD.Studio;
 using FMODUnity;
 using SNShien.Common.AssetTools;
 using SNShien.Common.DataTools;
+using SNShien.Common.TesterTools;
 using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
@@ -10,10 +11,14 @@ namespace SNShien.Common.AudioTools
 {
     public class FmodAudioManager : IAudioManager
     {
+        private const string DEBUGGER_KEY = "FmodAudioManager";
+
         private FMOD.Studio.System studioSystem = RuntimeManager.StudioSystem;
         private Dictionary<int, EventInstance> eventInstanceTrackDict;
         private Dictionary<string, EventReference> audioCollectionDict;
-        private JsonParser jsonParser;
+
+        private readonly JsonParser jsonParser;
+        private readonly Debugger debugger;
 
         public List<string> GetAudioKeyList => new List<string>(audioCollectionDict.Keys);
 
@@ -21,22 +26,13 @@ namespace SNShien.Common.AudioTools
         {
             audioCollectionDict = new Dictionary<string, EventReference>();
             jsonParser = new JsonParser();
+            debugger = new Debugger(DEBUGGER_KEY);
         }
 
         public void PlayOneShot(string audioKey)
         {
             if (TryGetAudioEventReference(audioKey, out EventReference eventReference))
                 RuntimeManager.PlayOneShot(eventReference);
-        }
-
-        private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
-        {
-            string convertAudioKey = ConvertDictionaryKey(audioKey);
-            
-            if(jsonParser.TrySerializeObject(audioCollectionDict, out string json))
-                Debug.Log($"TrySerializeObject: {json}");
-            
-            return audioCollectionDict.TryGetValue(convertAudioKey, out eventReference);
         }
 
         public void PlayOneShot(EventReference eventReference)
@@ -93,7 +89,7 @@ namespace SNShien.Common.AudioTools
             RuntimeManager.StudioSystem.getBankList(out Bank[] banks);
             if (banks == null || banks.Length == 0)
             {
-                Debug.Log("[FmodAudioManager] [InitCollectionFromProject] banks is null or empty");
+                debugger.ShowLog("banks is null or empty", true);
                 return;
             }
 
@@ -114,13 +110,8 @@ namespace SNShien.Common.AudioTools
                     audioCollectionDict.Add(audioKey, eventReference);
                 }
 
-                Debug.Log($"[FmodAudioManager] [InitCollectionFromProject] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventLogs)}");
+                debugger.ShowLog($"bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventLogs)}", true);
             }
-        }
-
-        private string ConvertDictionaryKey(string audioKey)
-        {
-            return audioKey.Replace("_", string.Empty).ToLower();
         }
 
         public void InitCollectionFromSetting(IAudioCollection collectionSetting)
@@ -133,7 +124,7 @@ namespace SNShien.Common.AudioTools
                 logs.Add($"audio key: {audioKey}, GUID: {collectionInfo.GetEventRef.Guid}");
             }
 
-            Debug.Log($"[FmodAudioManager] [InitCollectionFromSetting] audioEventList:\n {string.Join(",\n", logs)}");
+            debugger.ShowLog($"audioEventList:\n{string.Join(",\n", logs)}", true);
         }
 
         public void LoadAudioTextAsset(IAssetManager assetManager)
@@ -151,6 +142,17 @@ namespace SNShien.Common.AudioTools
             //
             //     RuntimeManager.LoadBank(audioTextAsset);
             // }
+        }
+
+        private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
+        {
+            string convertAudioKey = ConvertDictionaryKey(audioKey);
+            return audioCollectionDict.TryGetValue(convertAudioKey, out eventReference);
+        }
+
+        private string ConvertDictionaryKey(string audioKey)
+        {
+            return audioKey.Replace("_", string.Empty).ToLower();
         }
     }
 }

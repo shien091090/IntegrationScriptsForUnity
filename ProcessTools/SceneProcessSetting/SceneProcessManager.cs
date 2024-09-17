@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Sirenix.OdinInspector;
+using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -9,25 +10,25 @@ namespace SNShien.Common.ProcessTools
 {
     public class SceneProcessManager : SerializedMonoBehaviour
     {
+        private const string DEBUGGER_KEY = "SceneProcessManager";
+        
         [Inject] private ISceneProcessSetting sceneProcessSetting;
         [Inject] private IEventRegister eventRegister;
 
         [InlineButton("EditorSwitchSceneButton", "SwitchScene")] [ValueDropdown("GetRepositionActionKeys")] [SerializeField]
         private string testRepositionActionKey;
 
+        private Debugger debugger;
+
+        public SceneProcessManager()
+        {
+            debugger = new Debugger(DEBUGGER_KEY);
+        }
+
         private void Start()
         {
             SetEventRegister();
             StartSwitchDefaultScene();
-        }
-
-        private void StartSwitchDefaultScene()
-        {
-            SceneRepositionSetting[] sceneRepositionSettings = sceneProcessSetting.GetSceneRepositionSettings();
-            if (sceneRepositionSettings == null || sceneRepositionSettings.Length == 0)
-                return;
-
-            SwitchScene(sceneRepositionSettings[0].GetRepositionActionKey);
         }
 
         private string[] GetRepositionActionKeys()
@@ -48,6 +49,15 @@ namespace SNShien.Common.ProcessTools
             eventRegister.Register<SwitchSceneEvent>(OnSwitchScene);
         }
 
+        private void StartSwitchDefaultScene()
+        {
+            SceneRepositionSetting[] sceneRepositionSettings = sceneProcessSetting.GetSceneRepositionSettings();
+            if (sceneRepositionSettings == null || sceneRepositionSettings.Length == 0)
+                return;
+
+            SwitchScene(sceneRepositionSettings[0].GetRepositionActionKey);
+        }
+
         private void EditorSwitchSceneButton()
         {
             SwitchScene(testRepositionActionKey);
@@ -60,7 +70,7 @@ namespace SNShien.Common.ProcessTools
 
             if (sceneRepositionSetting == null)
             {
-                Debug.Log($"[SceneProcessManager] SwitchScene Failed : reposition action key '{repositionActionKey}' is not exist");
+                debugger.ShowLog($"SwitchScene Failed, reposition action key '{repositionActionKey}' is not exist");
                 return;
             }
 

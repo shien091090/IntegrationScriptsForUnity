@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -11,12 +12,21 @@ namespace SNShien.Common.AssetTools
 {
     public class LoadAssetManager : IAssetManager
     {
+        private const string DEBUGGER_KEY = "LoadAssetManager";
+
         [Inject] private ILoadAssetSetting loadAssetSetting;
 
         private readonly Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
+        private readonly Debugger debugger;
+
         private Queue<LoadingAssetResource> loadAssetQueue = new Queue<LoadingAssetResource>();
         private LoadingAssetResource currentAssetInfo;
         private int totalAssetCount;
+
+        public LoadAssetManager()
+        {
+            debugger = new Debugger(DEBUGGER_KEY);
+        }
 
         public event Action<LoadingProgress> OnUpdateLoadingProgress;
         public event Action OnAllAssetLoadCompleted;
@@ -102,16 +112,16 @@ namespace SNShien.Common.AssetTools
         private void PrintLog()
         {
             IList<IResourceProvider> providers = Addressables.ResourceManager.ResourceProviders;
-            Debug.Log($"providers.Count = {providers.Count}");
+            debugger.ShowLog($"providers.Count: {providers.Count}");
             foreach (IResourceProvider provider in providers)
             {
-                Debug.Log($"ProviderId = {provider.ProviderId}");
+                debugger.ShowLog($"ProviderId: {provider.ProviderId}");
             }
         }
 
         private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object
         {
-            Debug.Log($"[AssetManager] LoadAssetCompleted, Name = {loadedObj.Result.name}, Status = {loadedObj.Status}");
+            debugger.ShowLog($"Name: {loadedObj.Result.name}, Status: {loadedObj.Status}", true);
 
             if (loadedObj.Status == AsyncOperationStatus.Succeeded)
                 assetDict[loadedObj.Result.name] = loadedObj.Result;
