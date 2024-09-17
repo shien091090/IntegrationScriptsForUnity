@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
 using SNShien.Common.AssetTools;
+using SNShien.Common.DataTools;
 using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
@@ -12,12 +13,14 @@ namespace SNShien.Common.AudioTools
         private FMOD.Studio.System studioSystem = RuntimeManager.StudioSystem;
         private Dictionary<int, EventInstance> eventInstanceTrackDict;
         private Dictionary<string, EventReference> audioCollectionDict;
+        private JsonParser jsonParser;
 
         public List<string> GetAudioKeyList => new List<string>(audioCollectionDict.Keys);
 
         public FmodAudioManager()
         {
             audioCollectionDict = new Dictionary<string, EventReference>();
+            jsonParser = new JsonParser();
         }
 
         public void PlayOneShot(string audioKey)
@@ -28,8 +31,12 @@ namespace SNShien.Common.AudioTools
 
         private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
         {
-            audioKey = audioKey.Replace("_", string.Empty).ToLower();
-            return audioCollectionDict.TryGetValue(audioKey, out eventReference);
+            string convertAudioKey = ConvertDictionaryKey(audioKey);
+            
+            if(jsonParser.TrySerializeObject(audioCollectionDict, out string json))
+                Debug.Log($"TrySerializeObject: {json}");
+            
+            return audioCollectionDict.TryGetValue(convertAudioKey, out eventReference);
         }
 
         public void PlayOneShot(EventReference eventReference)
@@ -94,7 +101,7 @@ namespace SNShien.Common.AudioTools
             {
                 bank.getPath(out string bankPath);
                 bank.getEventList(out EventDescription[] eventDescriptions);
-                List<string> audioEventList = new List<string>();
+                List<string> audioEventLogs = new List<string>();
 
                 foreach (EventDescription eventDescription in eventDescriptions)
                 {
@@ -102,13 +109,18 @@ namespace SNShien.Common.AudioTools
                     EventReference eventReference = RuntimeManager.PathToEventReference(path);
                     string[] split = path.Split('/');
                     string audioKey = split[split.Length - 1];
-                    audioKey = audioKey.Replace("_", string.Empty).ToLower();
-                    audioEventList.Add(audioKey);
+                    audioKey = ConvertDictionaryKey(audioKey);
+                    audioEventLogs.Add(audioKey);
                     audioCollectionDict.Add(audioKey, eventReference);
                 }
 
-                Debug.Log($"[FmodAudioManager] [InitCollectionFromProject] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventList)}");
+                Debug.Log($"[FmodAudioManager] [InitCollectionFromProject] bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventLogs)}");
             }
+        }
+
+        private string ConvertDictionaryKey(string audioKey)
+        {
+            return audioKey.Replace("_", string.Empty).ToLower();
         }
 
         public void InitCollectionFromSetting(IAudioCollection collectionSetting)
@@ -116,8 +128,9 @@ namespace SNShien.Common.AudioTools
             List<string> logs = new List<string>();
             foreach (FmodAudioCollection collectionInfo in collectionSetting.GetAudioEventRefList)
             {
-                audioCollectionDict[collectionInfo.GetAudioKey] = collectionInfo.GetEventRef;
-                logs.Add($"audio key: {collectionInfo.GetAudioKey}, GUID: {collectionInfo.GetEventRef.Guid}");
+                string audioKey = ConvertDictionaryKey(collectionInfo.GetAudioKey);
+                audioCollectionDict[audioKey] = collectionInfo.GetEventRef;
+                logs.Add($"audio key: {audioKey}, GUID: {collectionInfo.GetEventRef.Guid}");
             }
 
             Debug.Log($"[FmodAudioManager] [InitCollectionFromSetting] audioEventList:\n {string.Join(",\n", logs)}");
