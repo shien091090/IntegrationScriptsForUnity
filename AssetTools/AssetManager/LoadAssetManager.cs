@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using Zenject;
 using Object = UnityEngine.Object;
@@ -20,6 +22,7 @@ namespace SNShien.Common.AssetTools
         private readonly Debugger debugger;
 
         private Queue<LoadingAssetResource> loadAssetQueue = new Queue<LoadingAssetResource>();
+        private Queue<string> assetLabelQueue = new Queue<string>();
         private LoadingAssetResource currentAssetInfo;
         private int totalAssetCount;
 
@@ -51,25 +54,50 @@ namespace SNShien.Common.AssetTools
 
         public void StartLoadAsset()
         {
+            ClearTempData();
+
+            foreach (string assetName in loadAssetSetting.GetLoadAssetNames)
+            {
+                loadAssetQueue.Enqueue(new LoadingAssetResource(assetName));
+            }
+
+            if (loadAssetSetting.IsNeedLoadAssetByLabel)
+            {
+                assetLabelQueue = new Queue<string>(loadAssetSetting.GetLoadAssetLabels.ToList());
+                LoadResourceLocationQueue(assetLabelQueue);
+            }
+            else
+                StartLoadAssetQueue();
+        }
+
+
+        private void ClearTempData()
+        {
             loadAssetQueue = new Queue<LoadingAssetResource>();
-            foreach (string loadPrefabName in loadAssetSetting.GetLoadPrefabNames)
-            {
-                loadAssetQueue.Enqueue(LoadingAssetResource.CreatePrefabAsset(loadPrefabName));
-            }
+            assetLabelQueue = new Queue<string>();
+            currentAssetInfo = null;
+            totalAssetCount = 0;
+        }
 
-            foreach (string loadScriptableObjectName in loadAssetSetting.GetLoadScriptableObjectNames)
-            {
-                loadAssetQueue.Enqueue(LoadingAssetResource.CreateScriptableObjectAsset(loadScriptableObjectName));
-            }
-
-            foreach (string assetName in loadAssetSetting.GetLoadOtherAssetNames)
-            {
-                loadAssetQueue.Enqueue(LoadingAssetResource.CreateOtherAsset(assetName));
-            }
-
+        private void StartLoadAssetQueue()
+        {
             totalAssetCount = loadAssetQueue.Count;
+            debugger.ShowLog($"totalAssetCount: {totalAssetCount}", true);
+
             OnUpdateLoadingProgress?.Invoke(new LoadingProgress(string.Empty, 0, totalAssetCount));
             LoadAssetQueue(loadAssetQueue);
+        }
+
+        private void LoadResourceLocationQueue(Queue<string> labelQueue)
+        {
+            if (labelQueue == null || labelQueue.Count == 0)
+            {
+                StartLoadAssetQueue();
+                return;
+            }
+
+            string label = labelQueue.Dequeue();
+            Addressables.LoadResourceLocationsAsync(label).Completed += OnLoadResourceLocationCompleted;
         }
 
         private void LoadAssetQueue(Queue<LoadingAssetResource> assetNameQueue)
@@ -83,29 +111,16 @@ namespace SNShien.Common.AssetTools
             LoadingAssetResource assetInfo = assetNameQueue.Dequeue();
             currentAssetInfo = assetInfo;
 
-            switch (currentAssetInfo.ResourceType)
-            {
-                case AssetResourceType.Prefab:
-                    Addressables.LoadAssetAsync<GameObject>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
-                    break;
-
-                case AssetResourceType.ScriptableObject:
-                    Addressables.LoadAssetAsync<ScriptableObject>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
-                    break;
-
-                case AssetResourceType.Bytes:
-                    Addressables.LoadAssetAsync<TextAsset>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
-                    break;
-
-                default:
-                    LoadAssetQueue(loadAssetQueue);
-                    break;
-            }
+            if (string.IsNullOrEmpty(assetInfo.AssetName) == false)
+                Addressables.LoadAssetAsync<Object>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
+            else
+                Addressables.LoadAssetAsync<Object>(currentAssetInfo.ResourceLocation).Completed += OnLoadAssetCompleted;
         }
 
         private void AllAssetLoadCompleted()
         {
             // PrintLog();
+            ClearTempData();
             OnAllAssetLoadCompleted?.Invoke();
         }
 
@@ -117,6 +132,36 @@ namespace SNShien.Common.AssetTools
             {
                 debugger.ShowLog($"ProviderId: {provider.ProviderId}");
             }
+        }
+
+        private void OnLoadResourceLocationCompleted(AsyncOperationHandle<IList<IResourceLocation>> loadedObj)
+        {
+            Dictionary<string, IResourceLocation> resourceLocationDict = new Dictionary<string, IResourceLocation>();
+            foreach (IResourceLocation resourceLocation in loadedObj.Result)
+            {
+                if (resourceLocationDict.ContainsKey(resourceLocation.PrimaryKey))
+                {
+                    if (resourceLocation.ResourceType.IsSubclassOf(typeof(GameObject)) ||
+                        resourceLocation.ResourceType.IsSubclassOf(typeof(ScriptableObject)) ||
+                        resourceLocation.ResourceType.IsSubclassOf(typeof(TextAsset)))
+                        resourceLocationDict[resourceLocation.PrimaryKey] = resourceLocation;
+                }
+                else
+                    resourceLocationDict[resourceLocation.PrimaryKey] = resourceLocation;
+            }
+
+            List<string> logs = resourceLocationDict.Values
+                .Select(resourceLocation => $"PrimaryKey: {resourceLocation.PrimaryKey}, ResourceType: {resourceLocation.ResourceType}")
+                .ToList();
+
+            debugger.ShowLog($"ResourceLocation logs:\n{string.Join("\n", logs)}", true);
+
+            foreach (IResourceLocation resourceLocation in resourceLocationDict.Values)
+            {
+                loadAssetQueue.Enqueue(new LoadingAssetResource(resourceLocation));
+            }
+
+            LoadResourceLocationQueue(assetLabelQueue);
         }
 
         private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object

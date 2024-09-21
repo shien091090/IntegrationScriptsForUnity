@@ -4,12 +4,11 @@ namespace SNShien.Common.AssetTools
 {
     public class LoadAssetScriptableObject : ScriptableObject, ILoadAssetSetting
     {
-        [SerializeField] private string[] loadPrefabName;
-        [SerializeField] private string[] loadScriptableObjectNames;
-        [SerializeField] private string[] loadOtherAssetNames;
+        [SerializeField] private string[] loadAssetNames;
+        [SerializeField] private string[] loadAssetLabels;
 
-        public string[] GetLoadPrefabNames => loadPrefabName;
-        public string[] GetLoadScriptableObjectNames => loadScriptableObjectNames;
-        public string[] GetLoadOtherAssetNames => loadOtherAssetNames;
+        public string[] GetLoadAssetNames => loadAssetNames;
+        public string[] GetLoadAssetLabels => loadAssetLabels;
+        public bool IsNeedLoadAssetByLabel => GetLoadAssetLabels != null && GetLoadAssetLabels.Length > 0;
     }
 }
