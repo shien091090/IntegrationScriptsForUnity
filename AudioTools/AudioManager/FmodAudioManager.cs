@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
-using SNShien.Common.AssetTools;
 using SNShien.Common.DataTools;
 using SNShien.Common.TesterTools;
-using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace SNShien.Common.AudioTools
@@ -125,23 +123,6 @@ namespace SNShien.Common.AudioTools
             }
 
             debugger.ShowLog($"audioEventList:\n{string.Join(",\n", logs)}", true);
-        }
-
-        public void LoadAudioTextAsset(IAssetManager assetManager)
-        {
-            // List<string> loadBankNames = audioCollection.GetLoadBankNameList;
-            //
-            // if (loadBankNames == null)
-            // return;
-            //
-            // foreach (string bankName in loadBankNames)
-            // {
-            //     TextAsset audioTextAsset = assetManager.GetAsset<TextAsset>(bankName);
-            //     if (audioTextAsset == null)
-            //         continue;
-            //
-            //     RuntimeManager.LoadBank(audioTextAsset);
-            // }
         }
 
         private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
