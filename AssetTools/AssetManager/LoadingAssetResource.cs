@@ -1,20 +1,32 @@
 using UnityEngine.ResourceManagement.ResourceLocations;
+using Object = UnityEngine.Object;
 
 namespace SNShien.Common.AssetTools
 {
     public class LoadingAssetResource
     {
-        public string AssetName { get; }
-        public IResourceLocation ResourceLocation { get; }
+        public LoadAssetKey LoadAssetKey { get; }
+        public Object LoadedObjResult { get; private set; }
+        public bool IsLoadedSuccess => LoadedObjResult != null;
 
         public LoadingAssetResource(string assetName)
         {
-            AssetName = assetName;
+            LoadAssetKey = new LoadAssetKey(assetName);
         }
 
         public LoadingAssetResource(IResourceLocation resourceLocation)
         {
-            ResourceLocation = resourceLocation;
+            LoadAssetKey = new LoadAssetKey(resourceLocation);
+        }
+
+        public void SetLoadedAsset(Object loadedObjResult)
+        {
+            LoadedObjResult = loadedObjResult;
+        }
+
+        public bool CompareLoadedObjectName(string loadedObjName)
+        {
+            return LoadAssetKey.Key.Contains(loadedObjName);
         }
     }
 }

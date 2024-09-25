@@ -9,6 +9,5 @@ namespace SNShien.Common.AssetTools
 
         public string[] GetLoadAssetNames => loadAssetNames;
         public string[] GetLoadAssetLabels => loadAssetLabels;
-        public bool IsNeedLoadAssetByLabel => GetLoadAssetLabels != null && GetLoadAssetLabels.Length > 0;
     }
 }

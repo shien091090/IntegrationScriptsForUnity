@@ -4,6 +4,5 @@ namespace SNShien.Common.AssetTools
     {
         public string[] GetLoadAssetNames { get; }
         string[] GetLoadAssetLabels { get; }
-        bool IsNeedLoadAssetByLabel { get; }
     }
 }

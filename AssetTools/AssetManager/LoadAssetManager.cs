@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using Zenject;
 using Object = UnityEngine.Object;
 
@@ -18,19 +17,19 @@ namespace SNShien.Common.AssetTools
 
         [Inject] private ILoadAssetSetting loadAssetSetting;
 
-        private readonly Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
         private readonly Debugger debugger;
 
-        private Queue<LoadingAssetResource> loadAssetQueue = new Queue<LoadingAssetResource>();
-        private Queue<string> assetLabelQueue = new Queue<string>();
-        private LoadingAssetResource currentAssetInfo;
-        private int totalAssetCount;
+        private Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
+        private AssetLoadingState currentState;
+        private LoadAssetProcess loadAssetProcess;
 
         public LoadAssetManager()
         {
             debugger = new Debugger(DEBUGGER_KEY);
+            SwitchCurrentState(AssetLoadingState.None);
         }
 
+        public event Action<AssetLoadingState> OnUpdateLoadingState;
         public event Action<LoadingProgress> OnUpdateLoadingProgress;
         public event Action OnAllAssetLoadCompleted;
 
@@ -52,128 +51,103 @@ namespace SNShien.Common.AssetTools
                 default;
         }
 
-        public void StartLoadAsset()
+        public void StartPrecedingProcedures()
         {
-            ClearTempData();
+            SwitchCurrentState(AssetLoadingState.StartLoad);
+            loadAssetProcess = new LoadAssetProcess(loadAssetSetting, debugger);
 
-            foreach (string assetName in loadAssetSetting.GetLoadAssetNames)
+            if (loadAssetProcess.IsNeedLoadAssetByLabel)
             {
-                loadAssetQueue.Enqueue(new LoadingAssetResource(assetName));
-            }
-
-            if (loadAssetSetting.IsNeedLoadAssetByLabel)
-            {
-                assetLabelQueue = new Queue<string>(loadAssetSetting.GetLoadAssetLabels.ToList());
-                LoadResourceLocationQueue(assetLabelQueue);
+                SwitchCurrentState(AssetLoadingState.LoadResourceLocation);
+                LoadResourceLocationQueue();
             }
             else
                 StartLoadAssetQueue();
         }
 
-
-        private void ClearTempData()
+        private void SwitchCurrentState(AssetLoadingState state)
         {
-            loadAssetQueue = new Queue<LoadingAssetResource>();
-            assetLabelQueue = new Queue<string>();
-            currentAssetInfo = null;
-            totalAssetCount = 0;
+            if (state == currentState)
+                return;
+
+            debugger.ShowLog($"{currentState} -> {state}", true);
+            currentState = state;
+
+            if (state == AssetLoadingState.LoadAssets)
+                loadAssetProcess.StartLoadAsset();
+
+            OnUpdateLoadingState?.Invoke(currentState);
         }
 
         private void StartLoadAssetQueue()
         {
-            totalAssetCount = loadAssetQueue.Count;
-            debugger.ShowLog($"totalAssetCount: {totalAssetCount}", true);
+            SwitchCurrentState(AssetLoadingState.LoadAssets);
+            debugger.ShowLog($"totalAssetCount: {loadAssetProcess.TotalLoadAssetCount}", true);
 
-            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(string.Empty, 0, totalAssetCount));
-            LoadAssetQueue(loadAssetQueue);
+            OnUpdateLoadingProgress?.Invoke(loadAssetProcess.CurrentLoadProgress);
+            LoadAssetQueue();
         }
 
-        private void LoadResourceLocationQueue(Queue<string> labelQueue)
+        private void LoadResourceLocationQueue()
         {
-            if (labelQueue == null || labelQueue.Count == 0)
-            {
+            string nextLoadLabel = loadAssetProcess.GetNextLoadLabel();
+
+            if (string.IsNullOrEmpty(nextLoadLabel))
                 StartLoadAssetQueue();
-                return;
-            }
-
-            string label = labelQueue.Dequeue();
-            Addressables.LoadResourceLocationsAsync(label).Completed += OnLoadResourceLocationCompleted;
+            else
+                Addressables.LoadResourceLocationsAsync(nextLoadLabel).Completed += OnLoadResourceLocationCompleted;
         }
 
-        private void LoadAssetQueue(Queue<LoadingAssetResource> assetNameQueue)
+        private void LoadAssetQueue()
         {
-            if (assetNameQueue == null || assetNameQueue.Count == 0)
+            LoadAssetKey nextLoadAssetKey = loadAssetProcess.GetNextLoadAssetKey();
+            if (nextLoadAssetKey == null)
             {
                 AllAssetLoadCompleted();
                 return;
             }
 
-            LoadingAssetResource assetInfo = assetNameQueue.Dequeue();
-            currentAssetInfo = assetInfo;
-
-            if (string.IsNullOrEmpty(assetInfo.AssetName) == false)
-                Addressables.LoadAssetAsync<Object>(currentAssetInfo.AssetName).Completed += OnLoadAssetCompleted;
+            if (nextLoadAssetKey.KeyType == LoadAssetKeyType.ResourceLocation)
+                Addressables.LoadAssetAsync<Object>(nextLoadAssetKey.ResourceLocation).Completed += OnLoadAssetCompleted;
             else
-                Addressables.LoadAssetAsync<Object>(currentAssetInfo.ResourceLocation).Completed += OnLoadAssetCompleted;
+                Addressables.LoadAssetAsync<Object>(nextLoadAssetKey.Key).Completed += OnLoadAssetCompleted;
         }
 
         private void AllAssetLoadCompleted()
         {
-            // PrintLog();
-            ClearTempData();
+            SwitchCurrentState(AssetLoadingState.LoadCompleted);
+            loadAssetProcess.PrintLoadAssetResultLog();
+            assetDict = loadAssetProcess.ParseLoadedAssetResult();
             OnAllAssetLoadCompleted?.Invoke();
-        }
-
-        private void PrintLog()
-        {
-            IList<IResourceProvider> providers = Addressables.ResourceManager.ResourceProviders;
-            debugger.ShowLog($"providers.Count: {providers.Count}");
-            foreach (IResourceProvider provider in providers)
-            {
-                debugger.ShowLog($"ProviderId: {provider.ProviderId}");
-            }
+            loadAssetProcess = null;
         }
 
         private void OnLoadResourceLocationCompleted(AsyncOperationHandle<IList<IResourceLocation>> loadedObj)
         {
-            Dictionary<string, IResourceLocation> resourceLocationDict = new Dictionary<string, IResourceLocation>();
             foreach (IResourceLocation resourceLocation in loadedObj.Result)
             {
-                if (resourceLocationDict.ContainsKey(resourceLocation.PrimaryKey))
-                {
-                    if (resourceLocation.ResourceType.IsSubclassOf(typeof(GameObject)) ||
-                        resourceLocation.ResourceType.IsSubclassOf(typeof(ScriptableObject)) ||
-                        resourceLocation.ResourceType.IsSubclassOf(typeof(TextAsset)))
-                        resourceLocationDict[resourceLocation.PrimaryKey] = resourceLocation;
-                }
-                else
-                    resourceLocationDict[resourceLocation.PrimaryKey] = resourceLocation;
+                loadAssetProcess.SetLoadedResourceLocation(resourceLocation);
             }
 
-            List<string> logs = resourceLocationDict.Values
+            List<string> logs = loadedObj.Result
                 .Select(resourceLocation => $"PrimaryKey: {resourceLocation.PrimaryKey}, ResourceType: {resourceLocation.ResourceType}")
                 .ToList();
 
             debugger.ShowLog($"ResourceLocation logs:\n{string.Join("\n", logs)}", true);
 
-            foreach (IResourceLocation resourceLocation in resourceLocationDict.Values)
-            {
-                loadAssetQueue.Enqueue(new LoadingAssetResource(resourceLocation));
-            }
-
-            LoadResourceLocationQueue(assetLabelQueue);
+            LoadResourceLocationQueue();
         }
 
         private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object
         {
-            debugger.ShowLog($"Name: {loadedObj.Result.name}, Status: {loadedObj.Status}", true);
+            loadAssetProcess.SetLoadedAsset(loadedObj, out string assetName);
 
-            if (loadedObj.Status == AsyncOperationStatus.Succeeded)
-                assetDict[loadedObj.Result.name] = loadedObj.Result;
+            debugger.ShowLog(
+                $"Name: {assetName}, Status: {loadedObj.Status}, Progress: {loadAssetProcess.CurrentLoadProgress.LoadedCount}/{loadAssetProcess.CurrentLoadProgress.TotalAssetCount}",
+                true);
 
-            OnUpdateLoadingProgress?.Invoke(new LoadingProgress(loadedObj.Result.name, assetDict.Count, totalAssetCount));
-            currentAssetInfo = null;
-            LoadAssetQueue(loadAssetQueue);
+            OnUpdateLoadingProgress?.Invoke(loadAssetProcess.CurrentLoadProgress);
+            LoadAssetQueue();
         }
     }
 }
