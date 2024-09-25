@@ -6,6 +6,7 @@ namespace SNShien.Common.AudioTools
     {
         void InitCollectionFromProject();
         void InitCollectionFromSetting(IAudioCollection collectionSetting);
+        void InitCollectionFromBundle(IAudioCollection collectionSetting, FmodAudioInitType initType);
         void SetParam(string audioParamKey, float paramValue);
         void Play(string audioKey, int trackIndex = 0);
         void Play(EventReference eventReference, int trackIndex = 0);

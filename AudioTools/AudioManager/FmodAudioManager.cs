@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using FMOD.Studio;
 using FMODUnity;
+using SNShien.Common.AssetTools;
 using SNShien.Common.DataTools;
 using SNShien.Common.TesterTools;
+using UnityEngine;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace SNShien.Common.AudioTools
@@ -17,11 +19,14 @@ namespace SNShien.Common.AudioTools
 
         private readonly JsonParser jsonParser;
         private readonly Debugger debugger;
+        private readonly IAssetManager assetManager;
 
         public List<string> GetAudioKeyList => new List<string>(audioCollectionDict.Keys);
 
-        public FmodAudioManager()
+        public FmodAudioManager(IAssetManager assetManager)
         {
+            this.assetManager = assetManager;
+
             audioCollectionDict = new Dictionary<string, EventReference>();
             jsonParser = new JsonParser();
             debugger = new Debugger(DEBUGGER_KEY);
@@ -109,6 +114,41 @@ namespace SNShien.Common.AudioTools
                 }
 
                 debugger.ShowLog($"bank: {bankPath}, audioEventList: {string.Join(",\n", audioEventLogs)}", true);
+            }
+        }
+
+        public void InitCollectionFromBundle(IAudioCollection collectionSetting, FmodAudioInitType initType)
+        {
+            List<string> bankAssetNameList = collectionSetting.GetBankAssetNameList;
+            if (bankAssetNameList == null || bankAssetNameList.Count == 0)
+            {
+                debugger.ShowLog("bankAssetNameList is null or empty", true);
+                return;
+            }
+
+            if (assetManager == null)
+            {
+                debugger.ShowLog("assetManager is null", true);
+                return;
+            }
+
+            foreach (string bankAssetName in bankAssetNameList)
+            {
+                TextAsset textAsset = assetManager.GetAsset<TextAsset>(bankAssetName);
+                RuntimeManager.LoadBank(textAsset);
+            }
+
+            debugger.ShowLog($"LoadBank success, bankAssetNameList:\n{string.Join("\n", bankAssetNameList)}", true);
+
+            switch (initType)
+            {
+                case FmodAudioInitType.FromSetting:
+                    InitCollectionFromSetting(collectionSetting);
+                    break;
+
+                case FmodAudioInitType.FromProject:
+                    InitCollectionFromProject();
+                    break;
             }
         }
 

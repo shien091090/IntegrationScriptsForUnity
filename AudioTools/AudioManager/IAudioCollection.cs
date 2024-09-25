@@ -5,7 +5,7 @@ namespace SNShien.Common.AudioTools
 {
     public interface IAudioCollection
     {
-        List<string> GetLoadBankNameList { get; }
+        List<string> GetBankAssetNameList { get; }
         List<FmodAudioCollection> GetAudioEventRefList { get; }
         EventReference GetEventReference(string audioKey);
     }

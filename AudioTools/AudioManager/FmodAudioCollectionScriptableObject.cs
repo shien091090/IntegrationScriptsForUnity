@@ -8,10 +8,10 @@ namespace SNShien.Common.AudioTools
     [CreateAssetMenu(fileName = "FmodAudioCollectionSetting", menuName = "SNShien/Create FmodAudioCollectionSetting")]
     public class FmodAudioCollectionScriptableObject : ScriptableObject, IAudioCollection
     {
-        [SerializeField] private List<string> loadBankNameList;
+        [SerializeField] private List<string> bankAssetNameList;
         [SerializeField] private List<FmodAudioCollection> audioEventRefList;
 
-        public List<string> GetLoadBankNameList => loadBankNameList;
+        public List<string> GetBankAssetNameList => bankAssetNameList;
         public List<FmodAudioCollection> GetAudioEventRefList => audioEventRefList;
 
         public EventReference GetEventReference(string audioKey)
