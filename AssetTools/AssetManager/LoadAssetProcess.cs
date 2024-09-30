@@ -117,14 +117,15 @@ namespace SNShien.Common.AssetTools
 
             if (loadedObj.Status == AsyncOperationStatus.Succeeded)
             {
-                if (currentLoadAsset.CompareLoadedObjectName(loadedObj.Result.name))
+                // if (currentLoadAsset.CompareLoadedObjectName(loadedObj.Result.name))
                 {
                     loadAssetResultDict[currentLoadAsset.LoadAssetKey.Key].SetLoadedAsset(loadedObj.Result);
                     CurrentLoadProgress.AddLoadedAsset(loadedObj.Result.name);
                     assetName = currentLoadAsset.LoadAssetKey.Key;
                 }
-                else
-                    throw new Exception("Loaded object name is not matched with current load asset name.");
+                // else
+                    // throw new Exception(
+                        // $"Loaded object name is not matched with current load asset name, LoadedObjName: {loadedObj.Result.name}, CurrentLoadAssetName: {currentLoadAsset.LoadAssetKey.Key}");
             }
             else
                 CurrentLoadProgress.AddLoadedAsset(string.Empty);
