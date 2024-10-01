@@ -1,17 +1,23 @@
 ﻿using System.Collections.Generic;
+using GameCore;
+using SNShien.Common.ProcessTools;
 using UnityEngine;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
     public class ObjectPoolManager : MonoBehaviour, IGameObjectPool
     {
-        public List<ObjectPoolUnit> objectPoolSetting; //物件池設定
+        [SerializeField] private ZenjectGameObjectSpawner zenjectGameObjectSpawner;
+        [SerializeField] private List<ObjectPoolUnit> objectPoolSetting; //物件池設定
+
         private Dictionary<string, ObjectPoolUnit> objectPoolTagDict; //(字典)從物件名稱查找ObjectPoolUnit
 
-        public void SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
+        private bool IsUseZenjectGameObjectSpawner => zenjectGameObjectSpawner != null;
+
+        public GameObject SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
         {
             if (objectPoolTagDict.ContainsKey(prefabName) == false)
-                return;
+                return null;
 
             CheckAutoCreateHolder(prefabName);
             GameObject go = PickUpObject(prefabName);
@@ -23,6 +29,13 @@ namespace SNShien.Common.MonoBehaviorTools
                 go.transform.localScale = scale;
 
             go.SetActive(true);
+            return go;
+        }
+
+        public T SpawnGameObject<T>(string prefabName, Vector3 position = default, Vector3 scale = default) where T : Component
+        {
+            GameObject go = SpawnGameObject(prefabName, position, scale);
+            return go.GetComponent<T>();
         }
 
         private void Awake()
@@ -55,10 +68,13 @@ namespace SNShien.Common.MonoBehaviorTools
             //創立新物件(Lambda)
             System.Action<ObjectPoolUnit> CreateNew = (ObjectPoolUnit u) =>
             {
-                GameObject _go = Instantiate(u.prefabReference, u.parentHolder);
-                u.AddElement(_go);
+                GameObject go = IsUseZenjectGameObjectSpawner ?
+                    zenjectGameObjectSpawner.Spawn(u.prefabReference, u.parentHolder) :
+                    Instantiate(u.prefabReference, u.parentHolder);
 
-                _result = _go;
+                u.AddElement(go);
+
+                _result = go;
             };
 
             if (_unit.ObjectPoolList == null || _unit.ObjectPoolList.Count == 0) //若物件池中無物件
@@ -82,18 +98,6 @@ namespace SNShien.Common.MonoBehaviorTools
             return _result;
         }
 
-        private void CheckAutoCreateHolder(string prefabName)
-        {
-            if (objectPoolTagDict.TryGetValue(prefabName, out ObjectPoolUnit unit) == false)
-                return;
-
-            if (unit.parentHolder != null)
-                return;
-
-            unit.parentHolder = new GameObject(prefabName + "Holder").transform;
-            unit.parentHolder.parent = transform;
-        }
-
         public void HideAll(string prefabName)
         {
             if (objectPoolTagDict.TryGetValue(prefabName, out ObjectPoolUnit unit) == false)
@@ -106,6 +110,18 @@ namespace SNShien.Common.MonoBehaviorTools
             {
                 go.SetActive(false);
             }
+        }
+
+        private void CheckAutoCreateHolder(string prefabName)
+        {
+            if (objectPoolTagDict.TryGetValue(prefabName, out ObjectPoolUnit unit) == false)
+                return;
+
+            if (unit.parentHolder != null)
+                return;
+
+            unit.parentHolder = new GameObject(prefabName + "Holder").transform;
+            unit.parentHolder.parent = transform;
         }
     }
 }
