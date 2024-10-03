@@ -3,6 +3,7 @@ using System.Linq;
 using Sirenix.OdinInspector;
 using SNShien.Common.TesterTools;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 using Zenject;
 
@@ -11,7 +12,7 @@ namespace SNShien.Common.ProcessTools
     public class SceneProcessManager : SerializedMonoBehaviour
     {
         private const string DEBUGGER_KEY = "SceneProcessManager";
-        
+
         [Inject] private ISceneProcessSetting sceneProcessSetting;
         [Inject] private IEventRegister eventRegister;
 
@@ -36,11 +37,10 @@ namespace SNShien.Common.ProcessTools
             if (sceneProcessSetting == null)
                 return Array.Empty<string>();
 
-            SceneRepositionSetting[] sceneRepositionSettings = sceneProcessSetting.GetSceneRepositionSettings();
-            if (sceneRepositionSettings == null || sceneRepositionSettings.Length == 0)
-                return Array.Empty<string>();
-
-            return sceneRepositionSettings.Select(x => x.GetRepositionActionKey).ToArray();
+            SceneProcessSetting processSetting = sceneProcessSetting.GetSceneProcessSetting();
+            return processSetting.IsRepositionSettingEmpty ?
+                Array.Empty<string>() :
+                processSetting.GetRepositionActionKeys;
         }
 
         private void SetEventRegister()
@@ -51,11 +51,9 @@ namespace SNShien.Common.ProcessTools
 
         private void StartSwitchDefaultScene()
         {
-            SceneRepositionSetting[] sceneRepositionSettings = sceneProcessSetting.GetSceneRepositionSettings();
-            if (sceneRepositionSettings == null || sceneRepositionSettings.Length == 0)
-                return;
-
-            SwitchScene(sceneRepositionSettings[0].GetRepositionActionKey);
+            string defaultRepositionActionKey = sceneProcessSetting.GetSceneProcessSetting().GetDefaultRepositionActionKey;
+            if (string.IsNullOrEmpty(defaultRepositionActionKey) == false)
+                SwitchScene(defaultRepositionActionKey);
         }
 
         private void EditorSwitchSceneButton()
@@ -65,8 +63,7 @@ namespace SNShien.Common.ProcessTools
 
         private void SwitchScene(string repositionActionKey)
         {
-            SceneRepositionSetting sceneRepositionSetting =
-                sceneProcessSetting.GetSceneRepositionSettings().FirstOrDefault(x => x.GetRepositionActionKey == repositionActionKey);
+            SceneRepositionSetting sceneRepositionSetting = sceneProcessSetting.GetSceneProcessSetting().GetRepositionSetting(repositionActionKey);
 
             if (sceneRepositionSetting == null)
             {
@@ -80,7 +77,19 @@ namespace SNShien.Common.ProcessTools
 
             string loadSceneName = sceneRepositionSetting.GetLoadSceneName;
             if (string.IsNullOrEmpty(loadSceneName) == false)
-                SceneManager.LoadScene(loadSceneName, LoadSceneMode.Additive);
+            {
+                SceneResourceType sceneResourceType = sceneProcessSetting.GetSceneProcessSetting().GetSceneResourceType(loadSceneName);
+                switch (sceneResourceType)
+                {
+                    case SceneResourceType.FromAddressableBundle:
+                        Addressables.LoadSceneAsync(loadSceneName, LoadSceneMode.Additive);
+                        break;
+
+                    default:
+                        SceneManager.LoadScene(loadSceneName, LoadSceneMode.Additive);
+                        break;
+                }
+            }
         }
 
         private void OnSwitchScene(SwitchSceneEvent eventInfo)

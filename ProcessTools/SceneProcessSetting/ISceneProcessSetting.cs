@@ -1,7 +1,9 @@
+using System.Collections.Generic;
+
 namespace SNShien.Common.ProcessTools
 {
     public interface ISceneProcessSetting
     {
-        SceneRepositionSetting[] GetSceneRepositionSettings();
+        SceneProcessSetting GetSceneProcessSetting();
     }
 }

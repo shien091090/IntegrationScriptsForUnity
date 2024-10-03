@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.SceneManagement;
 using Zenject;
 using Object = UnityEngine.Object;
 
@@ -106,7 +108,7 @@ namespace SNShien.Common.AssetTools
                 AllAssetLoadCompleted();
                 return;
             }
-
+            
             if (nextLoadAssetKey.KeyType == LoadAssetKeyType.ResourceLocation)
                 Addressables.LoadAssetAsync<Object>(nextLoadAssetKey.ResourceLocation).Completed += OnLoadAssetCompleted;
             else
