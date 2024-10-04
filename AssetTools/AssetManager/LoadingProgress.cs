@@ -1,3 +1,6 @@
+using UnityEngine;
+using UnityEngine.ResourceManagement.ResourceProviders;
+
 namespace SNShien.Common.AssetTools
 {
     public class LoadingProgress
@@ -19,10 +22,22 @@ namespace SNShien.Common.AssetTools
             TotalAssetCount = totalLoadAssetCount;
         }
 
-        public void AddLoadedAsset(string assetName)
+        public void AddLoadedAsset(object assetObj)
         {
-            CurrentLoadedAssetName = assetName;
+            CurrentLoadedAssetName = ConvertAssetName(assetObj);
             LoadedCount++;
+        }
+
+        private string ConvertAssetName(object assetObj)
+        {
+            if (assetObj is Object unityObj)
+                return unityObj.name;
+            else if (assetObj is SceneInstance sceneInstance)
+                return sceneInstance.Scene.name;
+            else if (assetObj is string)
+                return (string)assetObj; 
+            else
+                return assetObj.GetType().Name;
         }
     }
 }

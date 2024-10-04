@@ -3,6 +3,7 @@ namespace SNShien.Common.AssetTools
     public enum LoadAssetKeyType
     {
         AssetName,
-        ResourceLocation
+        ResourceLocation,
+        ResourceLocation_Scene
     }
 }

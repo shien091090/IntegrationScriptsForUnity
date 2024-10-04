@@ -77,9 +77,9 @@ namespace SNShien.Common.AssetTools
             return nextLoadKey;
         }
 
-        public Dictionary<string, Object> ParseLoadedAssetResult()
+        public Dictionary<string, object> ParseLoadedAssetResult()
         {
-            Dictionary<string, Object> result = new Dictionary<string, Object>();
+            Dictionary<string, object> result = new Dictionary<string, object>();
             if (loadAssetResultDict == null || loadAssetResultDict.Count == 0)
                 return result;
 
@@ -111,7 +111,7 @@ namespace SNShien.Common.AssetTools
             loadAssetResultDict[resourceLocation.PrimaryKey] = new LoadingAssetResource(resourceLocation);
         }
 
-        public void SetLoadedAsset<T>(AsyncOperationHandle<T> loadedObj, out string assetName) where T : Object
+        public void SetLoadedAsset<T>(AsyncOperationHandle<T> loadedObj, out string assetName)
         {
             assetName = string.Empty;
 
@@ -120,15 +120,21 @@ namespace SNShien.Common.AssetTools
                 // if (currentLoadAsset.CompareLoadedObjectName(loadedObj.Result.name))
                 {
                     loadAssetResultDict[currentLoadAsset.LoadAssetKey.Key].SetLoadedAsset(loadedObj.Result);
-                    CurrentLoadProgress.AddLoadedAsset(loadedObj.Result.name);
+                    CurrentLoadProgress.AddLoadedAsset(loadedObj.Result);
                     assetName = currentLoadAsset.LoadAssetKey.Key;
                 }
                 // else
-                    // throw new Exception(
-                        // $"Loaded object name is not matched with current load asset name, LoadedObjName: {loadedObj.Result.name}, CurrentLoadAssetName: {currentLoadAsset.LoadAssetKey.Key}");
+                // throw new Exception(
+                // $"Loaded object name is not matched with current load asset name, LoadedObjName: {loadedObj.Result.name}, CurrentLoadAssetName: {currentLoadAsset.LoadAssetKey.Key}");
             }
             else
                 CurrentLoadProgress.AddLoadedAsset(string.Empty);
+        }
+
+        public void SetBypassLoadedAsset(string assetName)
+        {
+            loadAssetResultDict.Remove(currentLoadAsset.LoadAssetKey.Key);
+            CurrentLoadProgress.AddLoadedAsset(assetName);
         }
 
         public void StartLoadAsset()

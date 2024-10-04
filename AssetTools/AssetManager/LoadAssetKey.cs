@@ -1,4 +1,5 @@
 using UnityEngine.ResourceManagement.ResourceLocations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace SNShien.Common.AssetTools
 {
@@ -18,7 +19,11 @@ namespace SNShien.Common.AssetTools
         {
             ResourceLocation = resourceLocation;
             Key = resourceLocation.PrimaryKey;
-            KeyType = LoadAssetKeyType.ResourceLocation;
+
+            if (resourceLocation.ResourceType == typeof(SceneInstance))
+                KeyType = LoadAssetKeyType.ResourceLocation_Scene;
+            else
+                KeyType = LoadAssetKeyType.ResourceLocation;
         }
     }
 }

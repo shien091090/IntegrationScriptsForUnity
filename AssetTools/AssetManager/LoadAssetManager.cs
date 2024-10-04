@@ -21,7 +21,7 @@ namespace SNShien.Common.AssetTools
 
         private readonly Debugger debugger;
 
-        private Dictionary<string, Object> assetDict = new Dictionary<string, Object>();
+        private Dictionary<string, object> assetDict = new Dictionary<string, object>();
         private AssetLoadingState currentState;
         private LoadAssetProcess loadAssetProcess;
 
@@ -40,7 +40,7 @@ namespace SNShien.Common.AssetTools
             if (!assetDict.ContainsKey(assetName))
                 return default;
 
-            Object obj = assetDict[assetName];
+            object obj = assetDict[assetName];
             if (obj is T result)
                 return result;
 
@@ -108,11 +108,33 @@ namespace SNShien.Common.AssetTools
                 AllAssetLoadCompleted();
                 return;
             }
-            
-            if (nextLoadAssetKey.KeyType == LoadAssetKeyType.ResourceLocation)
-                Addressables.LoadAssetAsync<Object>(nextLoadAssetKey.ResourceLocation).Completed += OnLoadAssetCompleted;
-            else
-                Addressables.LoadAssetAsync<Object>(nextLoadAssetKey.Key).Completed += OnLoadAssetCompleted;
+
+            switch (nextLoadAssetKey.KeyType)
+            {
+                case LoadAssetKeyType.ResourceLocation:
+                    Addressables.LoadAssetAsync<object>(nextLoadAssetKey.ResourceLocation).Completed += OnLoadAssetCompleted;
+                    break;
+
+                case LoadAssetKeyType.ResourceLocation_Scene:
+                    BypassLoadAsset(nextLoadAssetKey);
+                    break;
+
+                default:
+                    Addressables.LoadAssetAsync<object>(nextLoadAssetKey.Key).Completed += OnLoadAssetCompleted;
+                    break;
+            }
+        }
+
+        private void BypassLoadAsset(LoadAssetKey assetKey)
+        {
+            loadAssetProcess.SetBypassLoadedAsset(assetKey.Key);
+
+            debugger.ShowLog(
+                $"Key: {assetKey.Key}, KeyType: {assetKey.KeyType}, Progress: {loadAssetProcess.CurrentLoadProgress.LoadedCount}/{loadAssetProcess.CurrentLoadProgress.TotalAssetCount}",
+                true);
+
+            OnUpdateLoadingProgress?.Invoke(loadAssetProcess.CurrentLoadProgress);
+            LoadAssetQueue();
         }
 
         private void AllAssetLoadCompleted()
@@ -140,7 +162,7 @@ namespace SNShien.Common.AssetTools
             LoadResourceLocationQueue();
         }
 
-        private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj) where T : Object
+        private void OnLoadAssetCompleted<T>(AsyncOperationHandle<T> loadedObj)
         {
             loadAssetProcess.SetLoadedAsset(loadedObj, out string assetName);
 
