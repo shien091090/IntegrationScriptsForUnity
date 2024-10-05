@@ -78,17 +78,11 @@ namespace SNShien.Common.ProcessTools
             string loadSceneName = sceneRepositionSetting.GetLoadSceneName;
             if (string.IsNullOrEmpty(loadSceneName) == false)
             {
-                SceneResourceType sceneResourceType = sceneProcessSetting.GetSceneProcessSetting().GetSceneResourceType(loadSceneName);
-                switch (sceneResourceType)
-                {
-                    case SceneResourceType.FromAddressableBundle:
-                        Addressables.LoadSceneAsync(loadSceneName, LoadSceneMode.Additive);
-                        break;
-
-                    default:
-                        SceneManager.LoadScene(loadSceneName, LoadSceneMode.Additive);
-                        break;
-                }
+                SceneProcessSetting processSetting = sceneProcessSetting.GetSceneProcessSetting();
+                if (processSetting.IsFromBundle(loadSceneName, out string sceneBundlePath))
+                    Addressables.LoadSceneAsync(sceneBundlePath, LoadSceneMode.Additive);
+                else
+                    SceneManager.LoadScene(loadSceneName, LoadSceneMode.Additive);
             }
         }
 
