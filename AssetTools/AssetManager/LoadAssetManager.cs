@@ -35,7 +35,7 @@ namespace SNShien.Common.AssetTools
         public event Action<LoadingProgress> OnUpdateLoadingProgress;
         public event Action OnAllAssetLoadCompleted;
 
-        public T GetAsset<T>(string assetName) where T : Object
+        public T GetAsset<T>(string assetName)
         {
             if (!assetDict.ContainsKey(assetName))
                 return default;

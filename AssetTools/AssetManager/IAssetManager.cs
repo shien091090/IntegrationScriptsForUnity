@@ -8,7 +8,7 @@ namespace SNShien.Common.AssetTools
         event Action OnAllAssetLoadCompleted;
         event Action<LoadingProgress> OnUpdateLoadingProgress;
         event Action<AssetLoadingState> OnUpdateLoadingState;
-        T GetAsset<T>(string assetName) where T : Object;
+        T GetAsset<T>(string assetName);
         void StartPrecedingProcedures();
     }
 }
