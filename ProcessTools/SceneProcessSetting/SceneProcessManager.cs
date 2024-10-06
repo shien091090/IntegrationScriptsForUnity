@@ -20,16 +20,19 @@ namespace SNShien.Common.ProcessTools
         private string testRepositionActionKey;
 
         private Debugger debugger;
+        private bool isAlreadyInit;
 
-        public SceneProcessManager()
+        private void Init()
         {
+            if (isAlreadyInit)
+                return;
+
             debugger = new Debugger(DEBUGGER_KEY);
-        }
 
-        private void Start()
-        {
             SetEventRegister();
             StartSwitchDefaultScene();
+
+            isAlreadyInit = true;
         }
 
         private string[] GetRepositionActionKeys()
@@ -49,11 +52,23 @@ namespace SNShien.Common.ProcessTools
             eventRegister.Register<SwitchSceneEvent>(OnSwitchScene);
         }
 
+        private void Start()
+        {
+            Init();
+        }
+
         private void StartSwitchDefaultScene()
         {
             string defaultRepositionActionKey = sceneProcessSetting.GetSceneProcessSetting().GetDefaultRepositionActionKey;
+
+
             if (string.IsNullOrEmpty(defaultRepositionActionKey) == false)
+            {
+                debugger.ShowLog($"default reposition action key: {defaultRepositionActionKey}", true);
                 SwitchScene(defaultRepositionActionKey);
+            }
+            else
+                debugger.ShowLog("default reposition action key is empty", true);
         }
 
         private void EditorSwitchSceneButton()

@@ -12,7 +12,7 @@ namespace SNShien.Common.ProcessTools
 
         public string GetDefaultRepositionActionKey => IsRepositionSettingEmpty ?
             string.Empty :
-            sceneRepositionSettings[0].GetLoadSceneName;
+            sceneRepositionSettings[0].GetRepositionActionKey;
 
 
         public SceneProcessSetting(SceneNameSetting[] sceneNameDefines, SceneRepositionSetting[] sceneRepositionSettings)
