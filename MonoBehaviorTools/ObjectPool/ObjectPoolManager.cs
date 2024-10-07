@@ -38,14 +38,21 @@ namespace SNShien.Common.MonoBehaviorTools
             return go.GetComponent<T>();
         }
 
+        public void ExecuteModelInit()
+        {
+            Init();
+        }
+
         private void Awake()
         {
-            if (objectPoolTagDict == null)
-                Init();
+            Init();
         }
 
         private void Init()
         {
+            if (objectPoolTagDict != null)
+                return;
+
             objectPoolTagDict = new Dictionary<string, ObjectPoolUnit>();
 
             for (int i = 0; i < objectPoolSetting.Count; i++)
