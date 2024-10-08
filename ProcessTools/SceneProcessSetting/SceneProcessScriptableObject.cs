@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace SNShien.Common.ProcessTools
 {
+    [CreateAssetMenu(fileName = "SceneProcessSetting", menuName = "SNShien/Create SceneProcessSetting")]
     public class SceneProcessScriptableObject : SerializedScriptableObject, ISceneProcessSetting
     {
         public const string EMPTY_SCENE_NAME = "{Empty}";
