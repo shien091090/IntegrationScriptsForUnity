@@ -61,7 +61,6 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private void Init()
         {
-            debugger.ShowLog("Init");
             if (isInit)
                 return;
 

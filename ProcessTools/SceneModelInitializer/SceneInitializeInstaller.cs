@@ -18,11 +18,6 @@ namespace SNShien.Common.ProcessTools
             ExecuteInstaller();
         }
 
-        private void Awake()
-        {
-            sceneModelInitializer.ExecuteAllModel();
-        }
-
         private bool CheckAddInitModelList<T>()
         {
             T resolve = Container.Resolve<T>();
@@ -37,16 +32,25 @@ namespace SNShien.Common.ProcessTools
 
         protected abstract void ExecuteInstaller();
 
+        private void Awake()
+        {
+            sceneModelInitializer.ExecuteAllModel();
+        }
+
         protected void BindModel<T1, T2>() where T2 : T1
         {
             Container.Bind<T1>().To<T2>().AsSingle();
-            CheckAddInitModelList<T1>();
+            debugger.ShowLog(CheckAddInitModelList<T1>() ?
+                $"BindModel Success, model:{typeof(T2).Name}" :
+                $"BindModel Failed, model:{typeof(T2).Name}");
         }
 
         protected void BindModelFromInstance<T1, T2>(T2 instance) where T2 : T1
         {
             Container.Bind<T1>().FromInstance(instance).AsSingle();
-            CheckAddInitModelList<T1>();
+            debugger.ShowLog(CheckAddInitModelList<T1>() ?
+                $"BindModelFromInstance Success, model:{typeof(T2).Name}" :
+                $"BindModelFromInstance Failed, model:{typeof(T2).Name}");
         }
     }
 }
