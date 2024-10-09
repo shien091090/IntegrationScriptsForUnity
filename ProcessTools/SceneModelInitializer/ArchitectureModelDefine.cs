@@ -1,16 +1,17 @@
 using System.Reflection;
 using Sirenix.OdinInspector;
+using UnityEngine;
 
 namespace SNShien.Common.ProcessTools
 {
     [System.Serializable]
     public class ArchitectureModelDefine
     {
-        [Title("$ModelName")] [ReadOnly] public int orderNum;
+        [ReadOnly] [SerializeField] private string modelName;
+        [ReadOnly] [SerializeField] private int orderNum;
 
-        private string modelName;
-
-        public string ModelName => modelName;
+        public string GetModelName => modelName;
+        public int GetOrderNum => orderNum;
 
         public ArchitectureModelDefine(MemberInfo type, int orderNum)
         {

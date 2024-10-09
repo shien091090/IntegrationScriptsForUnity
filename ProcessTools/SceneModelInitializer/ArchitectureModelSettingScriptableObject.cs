@@ -14,7 +14,7 @@ namespace SNShien.Common.ProcessTools
 
         public int GetModelOrder(string modelName)
         {
-            return modelDefineList.FirstOrDefault(x => x.ModelName == modelName)?.orderNum ?? 0;
+            return modelDefineList.FirstOrDefault(x => x.GetModelName == modelName)?.GetOrderNum ?? 0;
         }
 
         private bool IsModelDefineExist(string typeName)
@@ -22,7 +22,7 @@ namespace SNShien.Common.ProcessTools
             if (modelDefineList == null || modelDefineList.Count == 0)
                 return false;
             else
-                return modelDefineList.Any(x => x.ModelName == typeName);
+                return modelDefineList.Any(x => x.GetModelName == typeName);
         }
 
         [Button("Parse Model Define List")]

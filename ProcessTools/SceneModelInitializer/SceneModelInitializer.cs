@@ -14,22 +14,11 @@ namespace SNShien.Common.ProcessTools
         private readonly Debugger debugger = new Debugger(DEBUGGER_KEY);
 
         private List<IArchitectureModel> modelList = new List<IArchitectureModel>();
-        
+
         public void ExecuteAllModel()
         {
             SortModel();
-
-            List<string> modelNameList = modelList.Select(x => x.GetType().Name).ToList();
-            for (int i = 0; i < modelNameList.Count; i++)
-            {
-                string modelName = modelNameList[i];
-                modelNameList[i] = $"{i + 1}. {modelName}";
-            }
-
-            string log = modelNameList.Count == 0 ?
-                "{Empty}" :
-                string.Join("\n", modelNameList);
-            debugger.ShowLog($"ExecuteAllModel, model list count:{modelNameList.Count}, list:\n{log}");
+            PrintExecuteAllModelLog();
 
             foreach (IArchitectureModel model in modelList)
             {
@@ -40,6 +29,22 @@ namespace SNShien.Common.ProcessTools
         public void RegisterModel(IArchitectureModel model)
         {
             modelList.Add(model);
+        }
+
+        private void PrintExecuteAllModelLog()
+        {
+            List<string> modelNameList = modelList.Select(x => x.GetType().Name).ToList();
+            for (int i = 0; i < modelNameList.Count; i++)
+            {
+                string modelName = modelNameList[i];
+                modelNameList[i] = $"{i + 1}. {modelName}";
+            }
+
+            string log = modelNameList.Count == 0 ?
+                "{Empty}" :
+                string.Join("\n", modelNameList);
+
+            debugger.ShowLog($"ExecuteAllModel, use model setting: {modelSetting != null}, model list count: {modelNameList.Count}, list:\n{log}");
         }
 
         private void SortModel()
