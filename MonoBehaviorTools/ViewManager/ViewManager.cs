@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using SNShien.Common.ProcessTools;
 using SNShien.Common.TesterTools;
@@ -17,9 +18,10 @@ namespace SNShien.Common.MonoBehaviorTools
         [SerializeField] private ZenjectGameObjectSpawner zenjectGameObjectSpawner;
         [SerializeField] private Transform viewHolder;
 
+        private readonly Dictionary<Type, InSceneViewInfo> viewStateDict = new Dictionary<Type, InSceneViewInfo>();
+        private readonly Debugger debugger = new Debugger(DEBUGGER_KEY);
+
         private Dictionary<Type, GameObject> viewPrefabDict = new Dictionary<Type, GameObject>();
-        private Dictionary<Type, InSceneViewInfo> viewStateDict;
-        private Debugger debugger = new Debugger(DEBUGGER_KEY);
         private bool isInit;
 
         private bool IsUseZenjectGameObjectSpawner => zenjectGameObjectSpawner != null;
@@ -65,6 +67,7 @@ namespace SNShien.Common.MonoBehaviorTools
                 return;
 
             InitViewPrefabDict();
+            isInit = true;
         }
 
         private void InitViewPrefabDict()
@@ -72,14 +75,14 @@ namespace SNShien.Common.MonoBehaviorTools
             viewPrefabDict = new Dictionary<Type, GameObject>();
             foreach (GameObject prefab in viewPrefabSetting.GetPrefabList)
             {
-                viewPrefabDict[prefab.GetComponent<IArchitectureView>().GetType()] = prefab;
+                IArchitectureView view = prefab.GetComponent<IArchitectureView>();
+                if (view == null)
+                    debugger.ShowLog($"Prefab {prefab.name} doesn't have IArchitectureView component.");
+                else
+                    viewPrefabDict[view.GetType()] = prefab;
             }
 
-            //print log
-            foreach (KeyValuePair<Type, GameObject> item in viewPrefabDict)
-            {
-                Debug.Log($"{item.Key.Name} : {item.Value.name}");
-            }
+            PrintInitViewPrefabDictLog();
         }
 
         private IArchitectureView GetViewInstance<T>() where T : IArchitectureView
@@ -108,6 +111,22 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             if (viewStateDict.TryGetValue(typeof(T), out InSceneViewInfo viewInfo))
                 viewInfo.SetState(state);
+        }
+
+        private void PrintInitViewPrefabDictLog()
+        {
+            List<string> viewPrefabNameList = viewPrefabDict.Values.Select(x => x.name).ToList();
+            for (int i = 0; i < viewPrefabNameList.Count; i++)
+            {
+                string viewPrefabName = viewPrefabNameList[i];
+                viewPrefabNameList[i] = $"{i + 1}. {viewPrefabName}";
+            }
+
+            string log = viewPrefabNameList.Count == 0 ?
+                "{Empty}" :
+                string.Join("\n", viewPrefabNameList);
+
+            debugger.ShowLog($"InitViewPrefabDict, view prefab list count: {viewPrefabNameList.Count}, list:\n{log}");
         }
 
         private IArchitectureView CreateNewView<T>(GameObject prefab) where T : IArchitectureView
