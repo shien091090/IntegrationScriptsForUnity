@@ -1,8 +1,9 @@
 using SNShien.Common.TesterTools;
+using Zenject;
 
 namespace SNShien.Common.ProcessTools
 {
-    public abstract class SceneInitializeInstaller : ZenjectGameObjectSpawner
+    public abstract class SceneInitializeInstaller : MonoInstaller 
     {
         private const string DEBUGGER_KEY = "SceneInitializeInstaller";
 

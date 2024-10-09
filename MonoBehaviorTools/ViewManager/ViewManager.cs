@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
+using SNShien.Common.AdapterTools;
 using SNShien.Common.ProcessTools;
 using SNShien.Common.TesterTools;
 using UnityEngine;
@@ -14,8 +15,8 @@ namespace SNShien.Common.MonoBehaviorTools
         private const string DEBUGGER_KEY = "ViewManager";
 
         [Inject] private IViewPrefabSetting viewPrefabSetting;
+        [InjectOptional] private IGameObjectSpawner gameObjectSpawner;
 
-        [SerializeField] private ZenjectGameObjectSpawner zenjectGameObjectSpawner;
         [SerializeField] private Transform viewHolder;
 
         private readonly Dictionary<Type, InSceneViewInfo> viewStateDict = new Dictionary<Type, InSceneViewInfo>();
@@ -23,8 +24,6 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private Dictionary<Type, GameObject> viewPrefabDict = new Dictionary<Type, GameObject>();
         private bool isInit;
-
-        private bool IsUseZenjectGameObjectSpawner => zenjectGameObjectSpawner != null;
 
         public void OpenView<T>(params object[] parameters) where T : IArchitectureView
         {
@@ -52,11 +51,6 @@ namespace SNShien.Common.MonoBehaviorTools
         }
 
         public void ExecuteModelInit()
-        {
-            Init();
-        }
-
-        private void Awake()
         {
             Init();
         }
@@ -113,6 +107,11 @@ namespace SNShien.Common.MonoBehaviorTools
                 viewInfo.SetState(state);
         }
 
+        private void Awake()
+        {
+            Init();
+        }
+
         private void PrintInitViewPrefabDictLog()
         {
             List<string> viewPrefabNameList = viewPrefabDict.Values.Select(x => x.name).ToList();
@@ -131,10 +130,11 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private IArchitectureView CreateNewView<T>(GameObject prefab) where T : IArchitectureView
         {
-            GameObject newGo = null;
-            newGo = IsUseZenjectGameObjectSpawner ?
-                zenjectGameObjectSpawner.Spawn(prefab, viewHolder) :
-                Instantiate(prefab, viewHolder);
+            GameObject newGo = gameObjectSpawner == null ?
+                Instantiate(prefab, viewHolder) :
+                gameObjectSpawner.Spawn(prefab, viewHolder);
+
+            debugger.ShowLog($"CreateNewView, prefab: {prefab.name}, isUseGameObjectSpawner: {gameObjectSpawner != null}");
 
             IArchitectureView view = newGo.GetComponent<IArchitectureView>();
             viewStateDict[typeof(T)] = new InSceneViewInfo(view);

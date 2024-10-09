@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
-using GameCore;
-using SNShien.Common.ProcessTools;
+using SNShien.Common.AdapterTools;
 using UnityEngine;
+using Zenject;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
     public class ObjectPoolManager : MonoBehaviour, IGameObjectPool
     {
-        [SerializeField] private ZenjectGameObjectSpawner zenjectGameObjectSpawner;
+        [InjectOptional] private IGameObjectSpawner gameObjectSpawner;
+
         [SerializeField] private List<ObjectPoolUnit> objectPoolSetting; //物件池設定
 
         private Dictionary<string, ObjectPoolUnit> objectPoolTagDict; //(字典)從物件名稱查找ObjectPoolUnit
-
-        private bool IsUseZenjectGameObjectSpawner => zenjectGameObjectSpawner != null;
 
         public GameObject SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
         {
@@ -36,16 +35,6 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             GameObject go = SpawnGameObject(prefabName, position, scale);
             return go.GetComponent<T>();
-        }
-
-        public void ExecuteModelInit()
-        {
-            Init();
-        }
-
-        private void Awake()
-        {
-            Init();
         }
 
         private void Init()
@@ -75,8 +64,8 @@ namespace SNShien.Common.MonoBehaviorTools
             //創立新物件(Lambda)
             System.Action<ObjectPoolUnit> CreateNew = (ObjectPoolUnit u) =>
             {
-                GameObject go = IsUseZenjectGameObjectSpawner ?
-                    zenjectGameObjectSpawner.Spawn(u.prefabReference, u.parentHolder) :
+                GameObject go = gameObjectSpawner != null ?
+                    gameObjectSpawner.Spawn(u.prefabReference, u.parentHolder) :
                     Instantiate(u.prefabReference, u.parentHolder);
 
                 u.AddElement(go);
@@ -129,6 +118,11 @@ namespace SNShien.Common.MonoBehaviorTools
 
             unit.parentHolder = new GameObject(prefabName + "Holder").transform;
             unit.parentHolder.parent = transform;
+        }
+
+        private void Awake()
+        {
+            Init();
         }
     }
 }
