@@ -3,7 +3,7 @@ using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace GameCore
+namespace SNShien.Common.MonoBehaviorTools 
 {
     [RequireComponent(typeof(EventTrigger))]
     public class OperableUI : MonoBehaviour
