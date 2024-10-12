@@ -1,5 +1,3 @@
-using GameCore;
-
 namespace SNShien.Common.ProcessTools
 {
     public interface ISceneModelInitializer
