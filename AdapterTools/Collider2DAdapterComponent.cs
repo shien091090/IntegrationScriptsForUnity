@@ -12,6 +12,11 @@ namespace SNShien.Common.AdapterTools
             this.handler = handler;
         }
 
+        public void SetHandlerType(ColliderHandleType handleType)
+        {
+            this.handleType = handleType;
+        }
+
         public void OnCollisionEnter2D(Collision2D col)
         {
             if (handleType == ColliderHandleType.Collision)
