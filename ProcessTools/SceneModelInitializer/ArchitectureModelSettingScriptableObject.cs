@@ -10,6 +10,7 @@ namespace SNShien.Common.ProcessTools
     [CreateAssetMenu(fileName = "ArchitectureModelSetting", menuName = "SNShien/Create ArchitectureModelSetting")]
     public class ArchitectureModelSettingScriptableObject : SerializedScriptableObject, IArchitectureModelSetting
     {
+        [SerializeField] private string[] preLoadAssemblyNames;
         [SerializeField] [OnValueChanged("ReParseOrderNum")] private List<ArchitectureModelDefine> modelDefineList;
 
         public int GetModelOrder(string modelName)
@@ -28,6 +29,12 @@ namespace SNShien.Common.ProcessTools
         [Button("Parse Model Define List")]
         private void ParseModelDefineList()
         {
+            if (preLoadAssemblyNames != null && preLoadAssemblyNames.Length > 0)
+            {
+                foreach (string assemblyName in preLoadAssemblyNames)
+                    ReflectionManager.AddAssemblyStorage(assemblyName);
+            }
+
             if (ReflectionManager.HaveAssemblyStorageSource(typeof(IArchitectureModel)) == false)
                 ReflectionManager.AddAssemblyStorage(typeof(IArchitectureModel));
 
