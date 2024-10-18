@@ -3,7 +3,7 @@ using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace SNShien.Common.MonoBehaviorTools 
+namespace SNShien.Common.MonoBehaviorTools
 {
     [RequireComponent(typeof(EventTrigger))]
     public class OperableUI : MonoBehaviour
@@ -128,8 +128,8 @@ namespace SNShien.Common.MonoBehaviorTools
                 else
                 {
                     // ShowLog(isDoubleClickCoolDown ?
-                        // "OnClickDown(DoubleClickCoolDown)" :
-                        // "OnClickDown");
+                    // "OnClickDown(DoubleClickCoolDown)" :
+                    // "OnClickDown");
                 }
             }
 
@@ -142,9 +142,6 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             isClicked = false;
 
-            if (isDoubleClickCoolDown == false)
-                isWaitDoubleClick = true;
-
             if (isDrag)
             {
                 ShowLog("OnDragOverEvent");
@@ -153,6 +150,9 @@ namespace SNShien.Common.MonoBehaviorTools
             }
             else
             {
+                if (isDoubleClickCoolDown == false)
+                    isWaitDoubleClick = true;
+                
                 if (isWaitForDoubleClickUp)
                     isWaitForDoubleClickUp = false;
                 else
