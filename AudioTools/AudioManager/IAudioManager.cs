@@ -1,3 +1,4 @@
+using FMOD.Studio;
 using FMODUnity;
 
 namespace SNShien.Common.AudioTools
@@ -11,6 +12,7 @@ namespace SNShien.Common.AudioTools
         void Play(string audioKey, int trackIndex = 0);
         void Play(EventReference eventReference, int trackIndex = 0);
         void Stop(int trackIndex = 0, bool stopImmediately = false);
+        FmodAudioCallbackSetting PlayWithCallback(string audioKey, int trackIndex = 0);
         void PlayOneShot(string audioKey);
         void PlayOneShot(EventReference eventReference);
     }

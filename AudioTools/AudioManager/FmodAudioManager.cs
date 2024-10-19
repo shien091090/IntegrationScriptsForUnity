@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
+using FMOD;
 using FMOD.Studio;
 using FMODUnity;
 using SNShien.Common.AssetTools;
 using SNShien.Common.DataTools;
 using SNShien.Common.TesterTools;
 using UnityEngine;
+using Zenject;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 namespace SNShien.Common.AudioTools
@@ -12,24 +15,26 @@ namespace SNShien.Common.AudioTools
     public class FmodAudioManager : IAudioManager
     {
         private const string DEBUGGER_KEY = "FmodAudioManager";
+        private static EVENT_CALLBACK audioCallbackEvent;
+
+        [InjectOptional] private IAssetManager assetManager;
 
         private FMOD.Studio.System studioSystem = RuntimeManager.StudioSystem;
         private Dictionary<int, EventInstance> eventInstanceTrackDict;
         private Dictionary<string, EventReference> audioCollectionDict;
+        private FmodAudioCallbackSetting callbackSetting;
 
         private readonly JsonParser jsonParser;
         private readonly Debugger debugger;
-        private readonly IAssetManager assetManager;
 
         public List<string> GetAudioKeyList => new List<string>(audioCollectionDict.Keys);
 
-        public FmodAudioManager(IAssetManager assetManager)
+        public FmodAudioManager()
         {
-            this.assetManager = assetManager;
-
             audioCollectionDict = new Dictionary<string, EventReference>();
             jsonParser = new JsonParser();
             debugger = new Debugger(DEBUGGER_KEY);
+            audioCallbackEvent = OnAudioCallback;
         }
 
         public void PlayOneShot(string audioKey)
@@ -45,21 +50,9 @@ namespace SNShien.Common.AudioTools
 
         public void Play(EventReference eventReference, int trackIndex = 0)
         {
-            if (eventInstanceTrackDict == null)
-                eventInstanceTrackDict = new Dictionary<int, EventInstance>();
-
-            EventInstance eventInstance;
-            if (eventInstanceTrackDict.ContainsKey(trackIndex))
-            {
-                eventInstance = eventInstanceTrackDict[trackIndex];
-                eventInstance.getPlaybackState(out PLAYBACK_STATE playbackState);
-                if (playbackState == PLAYBACK_STATE.PLAYING)
-                    eventInstance.stop(STOP_MODE.ALLOWFADEOUT);
-            }
-
-            eventInstance = RuntimeManager.CreateInstance(eventReference);
+            EventInstance eventInstance = GetEventInstance(eventReference, trackIndex);
             eventInstanceTrackDict[trackIndex] = eventInstance;
-
+            callbackSetting = null;
             eventInstance.start();
         }
 
@@ -83,6 +76,8 @@ namespace SNShien.Common.AudioTools
             eventInstance.stop(stopImmediately ?
                 STOP_MODE.IMMEDIATE :
                 STOP_MODE.ALLOWFADEOUT);
+
+            callbackSetting = null;
         }
 
         public void InitCollectionFromProject()
@@ -165,15 +160,64 @@ namespace SNShien.Common.AudioTools
             debugger.ShowLog($"audioEventList:\n{string.Join(",\n", logs)}", true);
         }
 
+        public FmodAudioCallbackSetting PlayWithCallback(string audioKey, int trackIndex = 0)
+        {
+            if (TryGetAudioEventReference(audioKey, out EventReference eventReference) == false)
+                return null;
+
+            callbackSetting = new FmodAudioCallbackSetting();
+
+            EventInstance eventInstance = GetEventInstance(eventReference, trackIndex);
+            eventInstanceTrackDict[trackIndex] = eventInstance;
+
+            eventInstance.setCallback(audioCallbackEvent);
+            eventInstance.start();
+
+            return callbackSetting;
+        }
+
         private bool TryGetAudioEventReference(string audioKey, out EventReference eventReference)
         {
             string convertAudioKey = ConvertDictionaryKey(audioKey);
             return audioCollectionDict.TryGetValue(convertAudioKey, out eventReference);
         }
 
+        private EventInstance GetEventInstance(EventReference eventReference, int trackIndex = 0)
+        {
+            if (eventInstanceTrackDict == null)
+                eventInstanceTrackDict = new Dictionary<int, EventInstance>();
+
+            EventInstance eventInstance;
+            if (eventInstanceTrackDict.ContainsKey(trackIndex))
+            {
+                eventInstance = eventInstanceTrackDict[trackIndex];
+                eventInstance.getPlaybackState(out PLAYBACK_STATE playbackState);
+                if (playbackState == PLAYBACK_STATE.PLAYING)
+                    eventInstance.stop(STOP_MODE.ALLOWFADEOUT);
+            }
+
+            eventInstance = RuntimeManager.CreateInstance(eventReference);
+            return eventInstance;
+        }
+
         private string ConvertDictionaryKey(string audioKey)
         {
             return audioKey.Replace("_", string.Empty).ToLower();
+        }
+
+        private RESULT OnAudioCallback(EVENT_CALLBACK_TYPE type, IntPtr _event, IntPtr parameters)
+        {
+            if (type == EVENT_CALLBACK_TYPE.SOUND_STOPPED ||
+                type == EVENT_CALLBACK_TYPE.DESTROYED)
+            {
+                debugger.ShowLog("AudioCallback Release");
+                callbackSetting = null;
+                audioCallbackEvent = null;
+                return RESULT.OK;
+            }
+
+            callbackSetting?.TryCallback(type);
+            return RESULT.OK;
         }
     }
 }
