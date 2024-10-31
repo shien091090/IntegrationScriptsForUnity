@@ -170,7 +170,7 @@ namespace SNShien.Common.AudioTools
             EventInstance eventInstance = GetEventInstance(eventReference, trackIndex);
             eventInstanceTrackDict[trackIndex] = eventInstance;
 
-            eventInstance.setCallback(audioCallbackEvent);
+            eventInstance.setCallback(audioCallbackEvent, EVENT_CALLBACK_TYPE.TIMELINE_BEAT);
             eventInstance.start();
 
             return callbackSetting;
@@ -207,10 +207,16 @@ namespace SNShien.Common.AudioTools
 
         private RESULT OnAudioCallback(EVENT_CALLBACK_TYPE type, IntPtr _event, IntPtr parameters)
         {
+            if (Application.isPlaying == false)
+            {
+                debugger.ShowLog($"is not playing and return", true);
+                return RESULT.OK;
+            }
+
             if (type == EVENT_CALLBACK_TYPE.SOUND_STOPPED ||
                 type == EVENT_CALLBACK_TYPE.DESTROYED)
             {
-                debugger.ShowLog("AudioCallback Release");
+                debugger.ShowLog("AudioCallback Release", true);
                 callbackSetting = null;
                 audioCallbackEvent = null;
                 return RESULT.OK;
