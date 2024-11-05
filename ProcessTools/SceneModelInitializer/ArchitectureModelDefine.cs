@@ -7,8 +7,8 @@ namespace SNShien.Common.ProcessTools
     [System.Serializable]
     public class ArchitectureModelDefine
     {
-        [ReadOnly] [SerializeField] private string modelName;
-        [ReadOnly] [SerializeField] private int orderNum;
+        [SerializeField] private string modelName;
+        [SerializeField] private int orderNum;
 
         public string GetModelName => modelName;
         public int GetOrderNum => orderNum;

@@ -11,6 +11,7 @@ namespace SNShien.Common.ProcessTools
         private const string DEBUGGER_KEY = "SceneInitializeInstaller";
 
         [InjectOptional] private IArchitectureModelSetting modelSetting;
+        [InjectOptional] private ISceneProcessManager sceneProcessManager;
 
         private ISceneModelInitializer sceneModelInitializer;
         private Debugger debugger;
@@ -19,14 +20,19 @@ namespace SNShien.Common.ProcessTools
         public override void InstallBindings()
         {
             debugger = new Debugger(DEBUGGER_KEY);
-
-            Container.Bind<ISceneModelInitializer>().To<SceneModelInitializer>().AsSingle();
-            sceneModelInitializer = Container.Resolve<ISceneModelInitializer>();
+            sceneModelInitializer = new SceneModelInitializer(GetCurrentSceneModelSetting());
             ExecuteInstaller();
+        }
+
+        private void Awake()
+        {
+            InitModels();
+            sceneModelInitializer.ExecuteAllModel();
         }
 
         private void InitModels()
         {
+            ISceneArchitectureModelSetting modelSetting = GetCurrentSceneModelSetting();
             if (modelSetting != null)
                 waitForInitTypeList = waitForInitTypeList
                     .OrderBy(x => modelSetting.GetModelOrder(x.modelType.Name))
@@ -38,8 +44,18 @@ namespace SNShien.Common.ProcessTools
                     $"init model success, model:{modelType.Name}" :
                     $"init model failed, model:{modelType.Name}");
             }
-            
+
             waitForInitTypeList.Clear();
+        }
+
+        private ISceneArchitectureModelSetting  GetCurrentSceneModelSetting()
+        {
+            if (sceneProcessManager == null ||
+                modelSetting == null)
+                return null;
+
+            string sceneName = sceneProcessManager.CurrentMainScene;
+            return modelSetting.GetModelSetting(sceneName);
         }
 
         private bool CheckAddInitModelList(Type interfaceType)
@@ -55,12 +71,6 @@ namespace SNShien.Common.ProcessTools
         }
 
         protected abstract void ExecuteInstaller();
-
-        private void Awake()
-        {
-            InitModels();
-            sceneModelInitializer.ExecuteAllModel();
-        }
 
         protected void BindModel<T1, T2>() where T2 : T1
         {

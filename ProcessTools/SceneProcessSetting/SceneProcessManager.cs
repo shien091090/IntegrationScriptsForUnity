@@ -9,7 +9,7 @@ using Zenject;
 
 namespace SNShien.Common.ProcessTools
 {
-    public class SceneProcessManager : SerializedMonoBehaviour
+    public class SceneProcessManager : SerializedMonoBehaviour, ISceneProcessManager
     {
         private const string DEBUGGER_KEY = "SceneProcessManager";
 
@@ -19,8 +19,15 @@ namespace SNShien.Common.ProcessTools
         [InlineButton("EditorSwitchSceneButton", "SwitchScene")] [ValueDropdown("GetRepositionActionKeys")] [SerializeField]
         private string testRepositionActionKey;
 
+        public string CurrentMainScene { get; private set; }
+
         private Debugger debugger;
         private bool isAlreadyInit;
+
+        private void Start()
+        {
+            Init();
+        }
 
         private void Init()
         {
@@ -50,11 +57,6 @@ namespace SNShien.Common.ProcessTools
         {
             eventRegister.Unregister<SwitchSceneEvent>(OnSwitchScene);
             eventRegister.Register<SwitchSceneEvent>(OnSwitchScene);
-        }
-
-        private void Start()
-        {
-            Init();
         }
 
         private void StartSwitchDefaultScene()
@@ -98,6 +100,8 @@ namespace SNShien.Common.ProcessTools
                     Addressables.LoadSceneAsync(sceneBundlePath, LoadSceneMode.Additive);
                 else
                     SceneManager.LoadScene(loadSceneName, LoadSceneMode.Additive);
+
+                CurrentMainScene = loadSceneName;
             }
         }
 

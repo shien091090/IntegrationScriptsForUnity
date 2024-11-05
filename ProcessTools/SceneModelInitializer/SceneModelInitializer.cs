@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SNShien.Common.TesterTools;
-using Zenject;
 
 namespace SNShien.Common.ProcessTools
 {
@@ -9,11 +8,15 @@ namespace SNShien.Common.ProcessTools
     {
         private const string DEBUGGER_KEY = "SceneModelInitializer";
 
-        [InjectOptional] private IArchitectureModelSetting modelSetting;
-
+        private readonly ISceneArchitectureModelSetting sceneModelSetting;
         private readonly Debugger debugger = new Debugger(DEBUGGER_KEY);
 
         private List<IArchitectureModel> modelList = new List<IArchitectureModel>();
+
+        public SceneModelInitializer(ISceneArchitectureModelSetting sceneModelSetting)
+        {
+            this.sceneModelSetting = sceneModelSetting;
+        }
 
         public void ExecuteAllModel()
         {
@@ -44,16 +47,18 @@ namespace SNShien.Common.ProcessTools
                 "{Empty}" :
                 string.Join("\n", modelNameList);
 
-            debugger.ShowLog($"ExecuteAllModel, use model setting: {modelSetting != null}, model list count: {modelNameList.Count}, list:\n{log}");
+            debugger.ShowLog(sceneModelSetting == null ?
+                $"ExecuteAllModel, use model setting: false, model list count: {modelNameList.Count}, order list:\n{log}" :
+                $"ExecuteAllModel, use model setting: true, current scene name: {sceneModelSetting.SceneName}, model list count: {modelNameList.Count}, order list:\n{log}");
         }
 
         private void SortModel()
         {
-            if (modelSetting == null)
+            if (sceneModelSetting == null)
                 return;
 
             modelList = modelList
-                .OrderBy(x => modelSetting.GetModelOrder(x.GetType().Name))
+                .OrderBy(x => sceneModelSetting.GetModelOrder(x.GetType().Name))
                 .ToList();
         }
     }
