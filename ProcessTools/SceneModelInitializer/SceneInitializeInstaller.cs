@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SNShien.Common.TesterTools;
+using UnityEngine;
 using Zenject;
 
 namespace SNShien.Common.ProcessTools
@@ -32,6 +33,12 @@ namespace SNShien.Common.ProcessTools
 
         private void InitModels()
         {
+            string currentSceneName = sceneProcessManager == null ?
+                "{None}" :
+                sceneProcessManager.CurrentMainScene;
+
+            debugger.ShowLog($"Start init models, current scene name: {currentSceneName}", fontColor: Color.green);
+
             ISceneArchitectureModelSetting modelSetting = GetCurrentSceneModelSetting();
             if (modelSetting != null)
                 waitForInitTypeList = waitForInitTypeList
@@ -48,7 +55,7 @@ namespace SNShien.Common.ProcessTools
             waitForInitTypeList.Clear();
         }
 
-        private ISceneArchitectureModelSetting  GetCurrentSceneModelSetting()
+        private ISceneArchitectureModelSetting GetCurrentSceneModelSetting()
         {
             if (sceneProcessManager == null ||
                 modelSetting == null)
