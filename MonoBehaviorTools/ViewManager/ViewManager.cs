@@ -15,6 +15,7 @@ namespace SNShien.Common.MonoBehaviorTools
         private const string DEBUGGER_KEY = "ViewManager";
 
         [Inject] private IViewPrefabSetting viewPrefabSetting;
+        [Inject] private IEventRegister eventRegister;
         [InjectOptional] private IGameObjectSpawner gameObjectSpawner;
 
         [SerializeField] private Transform viewHolder;
@@ -55,12 +56,18 @@ namespace SNShien.Common.MonoBehaviorTools
             Init();
         }
 
+        private void Awake()
+        {
+            Init();
+        }
+
         private void Init()
         {
             if (isInit)
                 return;
 
             InitViewPrefabDict();
+            RegisterEvent();
             isInit = true;
         }
 
@@ -107,9 +114,27 @@ namespace SNShien.Common.MonoBehaviorTools
                 viewInfo.SetState(state);
         }
 
-        private void Awake()
+        private void ClearAllView()
         {
-            Init();
+            viewStateDict.Clear();
+
+            List<GameObject> destroyList = new List<GameObject>();
+            for (int i = 0; i < viewHolder.childCount; i++)
+            {
+                GameObject go = viewHolder.GetChild(i).gameObject;
+                destroyList.Add(go);
+            }
+
+            foreach (GameObject go in destroyList)
+            {
+                DestroyImmediate(go);
+            }
+        }
+
+        private void RegisterEvent()
+        {
+            eventRegister.Unregister<SwitchSceneEvent>(OnSwitchSceneEvent);
+            eventRegister.Register<SwitchSceneEvent>(OnSwitchSceneEvent);
         }
 
         private void PrintInitViewPrefabDictLog()
@@ -140,6 +165,11 @@ namespace SNShien.Common.MonoBehaviorTools
             viewStateDict[typeof(T)] = new InSceneViewInfo(view);
 
             return view;
+        }
+
+        private void OnSwitchSceneEvent(SwitchSceneEvent eventInfo)
+        {
+            ClearAllView();
         }
     }
 }
