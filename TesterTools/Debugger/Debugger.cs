@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace SNShien.Common.TesterTools
@@ -13,7 +14,7 @@ namespace SNShien.Common.TesterTools
             DebuggerKey = debuggerKey;
         }
 
-        public void ShowLog(string log, bool printPrefixMethodName = false)
+        public void ShowLog(string log, bool printPrefixMethodName = false, Color fontColor = default)
         {
             stackTrace = new StackTrace();
 
@@ -28,7 +29,13 @@ namespace SNShien.Common.TesterTools
                 finalLog = log;
             }
 
-            Debug.Log($"[{DebuggerKey}] {finalLog}");
+            if (fontColor == default)
+                Debug.Log($"[{DebuggerKey}] {finalLog}");
+            else
+            {
+                string colorHex = ColorUtility.ToHtmlStringRGB(fontColor);
+                Debug.Log($"<color=#{colorHex}>[{DebuggerKey}] {finalLog}</color>");
+            }
         }
     }
 }
