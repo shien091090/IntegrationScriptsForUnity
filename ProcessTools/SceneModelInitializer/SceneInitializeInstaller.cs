@@ -18,6 +18,8 @@ namespace SNShien.Common.ProcessTools
         private Debugger debugger;
         private List<(Type modelType, Type modleInterfaceType)> waitForInitTypeList = new List<(Type modelType, Type modleInterfaceType)>();
 
+        public event Action OnPreStartInitModel;
+
         public override void InstallBindings()
         {
             debugger = new Debugger(DEBUGGER_KEY);
@@ -27,6 +29,8 @@ namespace SNShien.Common.ProcessTools
 
         private void Awake()
         {
+            OnPreStartInitModel?.Invoke();
+
             InitModels();
             sceneModelInitializer.ExecuteAllModel();
         }
