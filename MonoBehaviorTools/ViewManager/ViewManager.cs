@@ -56,6 +56,29 @@ namespace SNShien.Common.MonoBehaviorTools
             Init();
         }
 
+        public void ClearAllView()
+        {
+            foreach (InSceneViewInfo viewInfo in viewStateDict.Values)
+            {
+                debugger.ShowLog($"CloseAllView, view: {viewInfo.View.GetType().Name}");
+                viewInfo.View.CloseView();
+            }
+
+            viewStateDict.Clear();
+
+            List<GameObject> destroyList = new List<GameObject>();
+            for (int i = 0; i < viewHolder.childCount; i++)
+            {
+                GameObject go = viewHolder.GetChild(i).gameObject;
+                destroyList.Add(go);
+            }
+
+            foreach (GameObject go in destroyList)
+            {
+                DestroyImmediate(go);
+            }
+        }
+
         private void Awake()
         {
             Init();
@@ -112,23 +135,6 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             if (viewStateDict.TryGetValue(typeof(T), out InSceneViewInfo viewInfo))
                 viewInfo.SetState(state);
-        }
-
-        private void ClearAllView()
-        {
-            viewStateDict.Clear();
-
-            List<GameObject> destroyList = new List<GameObject>();
-            for (int i = 0; i < viewHolder.childCount; i++)
-            {
-                GameObject go = viewHolder.GetChild(i).gameObject;
-                destroyList.Add(go);
-            }
-
-            foreach (GameObject go in destroyList)
-            {
-                DestroyImmediate(go);
-            }
         }
 
         private void RegisterEvent()

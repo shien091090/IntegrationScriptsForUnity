@@ -5,5 +5,6 @@ namespace SNShien.Common.MonoBehaviorTools
         void UpdateView();
         void OpenView(params object[] parameters);
         void ReOpenView(params object[] parameters);
+        void CloseView();
     }
 }
