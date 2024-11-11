@@ -56,6 +56,11 @@ namespace SNShien.Common.MonoBehaviorTools
             Init();
         }
 
+        public void Release()
+        {
+            SetEventRegister(false);
+        }
+
         public void ClearAllView()
         {
             foreach (InSceneViewInfo viewInfo in viewStateDict.Values)
@@ -90,7 +95,7 @@ namespace SNShien.Common.MonoBehaviorTools
                 return;
 
             InitViewPrefabDict();
-            RegisterEvent();
+            SetEventRegister(true);
             isInit = true;
         }
 
@@ -137,10 +142,14 @@ namespace SNShien.Common.MonoBehaviorTools
                 viewInfo.SetState(state);
         }
 
-        private void RegisterEvent()
+        private void SetEventRegister(bool isListen)
         {
             eventRegister.Unregister<SwitchSceneEvent>(OnSwitchSceneEvent);
-            eventRegister.Register<SwitchSceneEvent>(OnSwitchSceneEvent);
+
+            if (isListen)
+            {
+                eventRegister.Register<SwitchSceneEvent>(OnSwitchSceneEvent);
+            }
         }
 
         private void PrintInitViewPrefabDictLog()
