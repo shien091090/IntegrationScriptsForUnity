@@ -4,5 +4,6 @@ namespace SNShien.Common.ProcessTools
     {
         void ExecuteAllModel();
         void RegisterModel(IArchitectureModel model);
+        void ReleaseAllModel();
     }
 }

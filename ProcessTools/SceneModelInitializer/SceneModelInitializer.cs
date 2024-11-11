@@ -34,6 +34,18 @@ namespace SNShien.Common.ProcessTools
             modelList.Add(model);
         }
 
+        public void ReleaseAllModel()
+        {
+            debugger.ShowLog("release all model");
+            
+            foreach (IArchitectureModel model in modelList)
+            {
+                model.Release();
+            }
+            
+            modelList.Clear();
+        }
+
         private void PrintExecuteAllModelLog()
         {
             List<string> modelNameList = modelList.Select(x => x.GetType().Name).ToList();

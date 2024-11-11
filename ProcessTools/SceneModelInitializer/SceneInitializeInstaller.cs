@@ -35,6 +35,11 @@ namespace SNShien.Common.ProcessTools
             sceneModelInitializer.ExecuteAllModel();
         }
 
+        private void OnDestroy()
+        {
+            sceneModelInitializer.ReleaseAllModel();
+        }
+
         private void InitModels()
         {
             string currentSceneName = sceneProcessManager == null ?
