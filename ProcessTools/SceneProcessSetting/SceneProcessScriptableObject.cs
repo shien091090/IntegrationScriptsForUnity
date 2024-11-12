@@ -14,6 +14,11 @@ namespace SNShien.Common.ProcessTools
 
         [SerializeField] [OnValueChanged("OnValueChanged")] private SceneRepositionSetting[] sceneRepositionSettings;
 
+        public List<string> GetSceneNames =>
+            sceneNameDefines == null || sceneNameDefines.Length == 0 ?
+                new List<string>() :
+                sceneNameDefines.Select(x => x.SceneName).Distinct().ToList();
+
         public SceneProcessSetting GetSceneProcessSetting()
         {
             return new SceneProcessSetting(sceneNameDefines, sceneRepositionSettings);

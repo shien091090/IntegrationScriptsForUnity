@@ -7,21 +7,18 @@ namespace SNShien.Common.ProcessTools
     [System.Serializable]
     public class ArchitectureModelDefine
     {
-        [SerializeField] private string modelName;
-        [SerializeField] private int orderNum;
+        [SerializeField] [SuffixLabel("@GetTestNum()")] private string modelName;
 
         public string GetModelName => modelName;
-        public int GetOrderNum => orderNum;
-
-        public ArchitectureModelDefine(MemberInfo type, int orderNum)
+        
+        public int GetTestNum()
         {
-            this.modelName = type.Name;
-            this.orderNum = orderNum;
+            return 0;
         }
 
-        public void SetOrderNum(int orderNum)
+        public ArchitectureModelDefine(MemberInfo type)
         {
-            this.orderNum = orderNum;
+            modelName = type.Name;
         }
     }
 }

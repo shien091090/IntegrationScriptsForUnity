@@ -15,8 +15,8 @@ namespace SNShien.Common.ProcessTools
         private const string ASSET_FOLDER_PATH = @"Assets";
 
         [SerializeField] private string[] preLoadAssemblyNames;
-        [SerializeField] private List<SceneArchitectureModelSetting> sceneModelSettingList;
         [SerializeField] private SceneProcessScriptableObject sceneProcessSetting;
+        [SerializeField] private List<SceneArchitectureModelSetting> sceneModelSettingList;
 
         public ISceneArchitectureModelSetting GetModelSetting(string sceneName)
         {
@@ -37,9 +37,34 @@ namespace SNShien.Common.ProcessTools
         {
 #if UNITY_EDITOR
 
-            if (sceneProcessSetting != null)
-                return;
+            if (sceneProcessSetting == null)
+                CheckAutoSetSceneProcessSettingField();
 
+            if (sceneProcessSetting != null)
+                CheckAutoSetSceneModelSettingList();
+
+#endif
+        }
+
+        private bool IsSceneModelSettingExist(string sceneName)
+        {
+            return sceneModelSettingList.Any(x => x.SceneName == sceneName);
+        }
+
+        private void CheckAutoSetSceneModelSettingList()
+        {
+            List<string> sceneNameList = sceneProcessSetting.GetSceneNames;
+            sceneModelSettingList ??= new List<SceneArchitectureModelSetting>();
+
+            foreach (string sceneName in sceneNameList)
+            {
+                if (IsSceneModelSettingExist(sceneName) == false)
+                    AddSceneModelSetting(sceneName);
+            }
+        }
+
+        private void CheckAutoSetSceneProcessSettingField()
+        {
             string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new string[] { ASSET_FOLDER_PATH });
             foreach (string guid in guids)
             {
@@ -56,8 +81,14 @@ namespace SNShien.Common.ProcessTools
                     break;
                 }
             }
+        }
 
-#endif
+        private void AddSceneModelSetting(string sceneName)
+        {
+            if (sceneModelSettingList == null)
+                sceneModelSettingList = new List<SceneArchitectureModelSetting>();
+
+            sceneModelSettingList.Add(new SceneArchitectureModelSetting(sceneName));
         }
 
         // [Button("Parse Model Define List")]
