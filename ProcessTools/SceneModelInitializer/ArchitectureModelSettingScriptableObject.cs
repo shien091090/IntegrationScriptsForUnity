@@ -1,17 +1,22 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace SNShien.Common.ProcessTools
 {
     [CreateAssetMenu(fileName = "ArchitectureModelSetting", menuName = "SNShien/Create ArchitectureModelSetting")]
     public class ArchitectureModelSettingScriptableObject : SerializedScriptableObject, IArchitectureModelSetting
     {
+        private const string ASSET_FOLDER_PATH = @"Assets";
+
         [SerializeField] private string[] preLoadAssemblyNames;
         [SerializeField] private List<SceneArchitectureModelSetting> sceneModelSettingList;
-
+        [SerializeField] private SceneProcessScriptableObject sceneProcessSetting;
 
         public ISceneArchitectureModelSetting GetModelSetting(string sceneName)
         {
@@ -25,6 +30,34 @@ namespace SNShien.Common.ProcessTools
             return matchSettings.Count == 0 ?
                 null :
                 matchSettings[0];
+        }
+
+        [Button("Init Scene Model Setting List")]
+        public void InitSceneModelSettingList()
+        {
+#if UNITY_EDITOR
+
+            if (sceneProcessSetting != null)
+                return;
+
+            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new string[] { ASSET_FOLDER_PATH });
+            foreach (string guid in guids)
+            {
+                string objectPath = AssetDatabase.GUIDToAssetPath(guid);
+                ScriptableObject scriptableObject = AssetDatabase.LoadAssetAtPath(objectPath, typeof(ScriptableObject)) as ScriptableObject;
+                if (scriptableObject == null || scriptableObject.GetType() != typeof(SceneProcessScriptableObject))
+                    continue;
+
+                SceneProcessScriptableObject setting = scriptableObject as SceneProcessScriptableObject;
+
+                if (setting != null)
+                {
+                    sceneProcessSetting = setting;
+                    break;
+                }
+            }
+
+#endif
         }
 
         // [Button("Parse Model Define List")]
