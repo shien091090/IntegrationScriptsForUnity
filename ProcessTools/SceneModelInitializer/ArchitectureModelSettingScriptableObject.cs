@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
+using SNShien.Common.DataTools;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -32,8 +34,8 @@ namespace SNShien.Common.ProcessTools
                 matchSettings[0];
         }
 
-        [Button("Init Scene Model Setting List")]
-        public void InitSceneModelSettingList()
+        [Button("Auto Create Settings")]
+        public void AutoCreateSettings()
         {
 #if UNITY_EDITOR
 
@@ -43,12 +45,21 @@ namespace SNShien.Common.ProcessTools
             if (sceneProcessSetting != null)
                 CheckAutoSetSceneModelSettingList();
 
+            CheckAutoAddModelDefine();
 #endif
         }
 
         private bool IsSceneModelSettingExist(string sceneName)
         {
             return sceneModelSettingList.Any(x => x.SceneName == sceneName);
+        }
+
+        private bool IsModelDefineExist(string typeName)
+        {
+            if (sceneModelSettingList == null || sceneModelSettingList.Count == 0)
+                return false;
+            
+            return sceneModelSettingList.Any(sceneModelSetting => sceneModelSetting.IsModelDefineExist(typeName));
         }
 
         private void CheckAutoSetSceneModelSettingList()
@@ -83,6 +94,28 @@ namespace SNShien.Common.ProcessTools
             }
         }
 
+        private void CheckAutoAddModelDefine()
+        {
+            if (preLoadAssemblyNames != null && preLoadAssemblyNames.Length > 0)
+            {
+                foreach (string assemblyName in preLoadAssemblyNames)
+                    ReflectionManager.AddAssemblyStorage(assemblyName);
+            }
+
+            if (ReflectionManager.HaveAssemblyStorageSource(typeof(IArchitectureModel)) == false)
+                ReflectionManager.AddAssemblyStorage(typeof(IArchitectureModel));
+
+            List<Type> modelTypes = ReflectionManager.GetInheritedTypes<IArchitectureModel>().ToList();
+            modelTypes.Remove(typeof(IArchitectureModel));
+            modelTypes = modelTypes.Where(x => x.IsInterface == false).ToList();
+
+            foreach (Type type in modelTypes)
+            {
+                if (IsModelDefineExist(type.Name) == false)
+                    AddDefineList(type);
+            }
+        }
+
         private void AddSceneModelSetting(string sceneName)
         {
             if (sceneModelSettingList == null)
@@ -91,45 +124,12 @@ namespace SNShien.Common.ProcessTools
             sceneModelSettingList.Add(new SceneArchitectureModelSetting(sceneName));
         }
 
-        // [Button("Parse Model Define List")]
-        // private void ParseModelDefineList()
-        // {
-        //     if (preLoadAssemblyNames != null && preLoadAssemblyNames.Length > 0)
-        //     {
-        //         foreach (string assemblyName in preLoadAssemblyNames)
-        //             ReflectionManager.AddAssemblyStorage(assemblyName);
-        //     }
-        //
-        //     if (ReflectionManager.HaveAssemblyStorageSource(typeof(IArchitectureModel)) == false)
-        //         ReflectionManager.AddAssemblyStorage(typeof(IArchitectureModel));
-        //
-        //     List<Type> modelTypes = ReflectionManager.GetInheritedTypes<IArchitectureModel>().ToList();
-        //     modelTypes.Remove(typeof(IArchitectureModel));
-        //     modelTypes = modelTypes.Where(x => x.IsInterface == false).ToList();
-        //
-        //     for (int i = 0; i < modelTypes.Count; i++)
-        //     {
-        //         Type type = modelTypes[i];
-        //         if (IsModelDefineExist(type.Name) == false)
-        //             AddDefineList(type, i + 1);
-        //     }
-        // }
+        private void AddDefineList(Type type)
+        {
+            if (sceneModelSettingList == null || sceneModelSettingList.Count == 0)
+                return;
 
-        // private void AddDefineList(Type type, int orderNum)
-        // {
-        //     if (modelDefineList == null)
-        //         modelDefineList = new List<ArchitectureModelDefine>();
-        //
-        //     modelDefineList.Add(new ArchitectureModelDefine(type, orderNum));
-        // }
-
-        // private void ReParseOrderNum()
-        // {
-        //     for (int i = 0; i < modelDefineList.Count; i++)
-        //     {
-        //         ArchitectureModelDefine modelDefine = modelDefineList[i];
-        //         modelDefine.SetOrderNum(i + 1);
-        //     }
-        // }
+            sceneModelSettingList[0].AddModelDefine(new ArchitectureModelDefine(type.Name));
+        }
     }
 }

@@ -9,9 +9,12 @@ namespace SNShien.Common.ProcessTools
     public class SceneArchitectureModelSetting : ISceneArchitectureModelSetting
     {
         [SerializeField] [ReadOnly] private string sceneName;
-        [SerializeField] private List<ArchitectureModelDefine> modelDefineList;
+
+        [SerializeField] [OnValueChanged("OnModelDefineListChanged")]
+        private List<ArchitectureModelDefine> modelDefineList;
 
         public string SceneName => sceneName;
+        public List<ArchitectureModelDefine> ModelDefineList => modelDefineList;
 
         public SceneArchitectureModelSetting(string sceneName)
         {
@@ -21,15 +24,45 @@ namespace SNShien.Common.ProcessTools
 
         public int GetModelOrder(string modelName)
         {
-            return modelDefineList.FindIndex(x => x.GetModelName == modelName);
+            return ModelDefineList.FindIndex(x => x.GetModelName == modelName);
         }
 
-        private bool IsModelDefineExist(string typeName)
+        public void AddModelDefine(ArchitectureModelDefine newModelDefine)
         {
-            if (modelDefineList == null || modelDefineList.Count == 0)
+            modelDefineList ??= new List<ArchitectureModelDefine>();
+            modelDefineList.Add(newModelDefine);
+            RefreshModelDefineListOrderNum();
+        }
+
+        public bool IsModelDefineExist(string typeName)
+        {
+            if (ModelDefineList == null || ModelDefineList.Count == 0)
                 return false;
             else
-                return modelDefineList.Any(x => x.GetModelName == typeName);
+                return ModelDefineList.Any(x => x.GetModelName == typeName);
+        }
+
+        private void RefreshModelDefineListOrderNum()
+        {
+            if (ModelDefineList == null || ModelDefineList.Count == 0)
+                return;
+
+            for (int i = 0; i < ModelDefineList.Count; i++)
+            {
+                ArchitectureModelDefine modelDefine = ModelDefineList[i];
+                modelDefine.SetOrderNum(i);
+            }
+        }
+
+        private void OnModelDefineListChanged()
+        {
+            RefreshModelDefineListOrderNum();
+        }
+
+        [OnInspectorInit]
+        private void OnInspectorInit()
+        {
+            RefreshModelDefineListOrderNum();
         }
     }
 }
