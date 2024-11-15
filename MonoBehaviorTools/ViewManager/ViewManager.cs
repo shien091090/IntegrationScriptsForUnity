@@ -46,6 +46,7 @@ namespace SNShien.Common.MonoBehaviorTools
                             return;
 
                         ArchitectureView view = CreateNewView<T>(prefab.gameObject);
+                        view.InitCanvasRenderModeSetting();
                         view.SetCanvasSortOrder(GetViewSortOrder<T>());
                         view.OpenView(parameters);
                         SetViewState<T>(ViewState.Opened);

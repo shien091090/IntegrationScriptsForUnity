@@ -17,6 +17,12 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
+        public void InitCanvasRenderModeSetting()
+        {
+            Canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            Canvas.worldCamera = Camera.main;
+        }
+
         public void SetCanvasSortOrder(int sortOrder)
         {
             Canvas.sortingOrder = sortOrder;
