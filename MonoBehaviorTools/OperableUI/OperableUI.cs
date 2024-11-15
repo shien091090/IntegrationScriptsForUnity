@@ -101,7 +101,8 @@ namespace SNShien.Common.MonoBehaviorTools
         private void MoveFollowMouse()
         {
             Vector3 mousePosition = Input.mousePosition;
-            transform.position = mousePosition;
+            Vector3 worldPositionInCamera = Camera.main.ScreenToWorldPoint(mousePosition);
+            transform.position = new Vector3(worldPositionInCamera.x, worldPositionInCamera.y, transform.position.z);
         }
 
         private void ShowLog(string log)
@@ -152,7 +153,7 @@ namespace SNShien.Common.MonoBehaviorTools
             {
                 if (isDoubleClickCoolDown == false)
                     isWaitDoubleClick = true;
-                
+
                 if (isWaitForDoubleClickUp)
                     isWaitForDoubleClickUp = false;
                 else
