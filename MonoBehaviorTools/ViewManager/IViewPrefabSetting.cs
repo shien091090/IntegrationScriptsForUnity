@@ -5,6 +5,6 @@ namespace SNShien.Common.MonoBehaviorTools
 {
     public interface IViewPrefabSetting
     {
-        List<GameObject> GetPrefabList { get; }
+        List<ArchitectureView> GetPrefabList { get; }
     }
 }

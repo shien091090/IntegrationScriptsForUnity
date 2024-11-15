@@ -3,9 +3,9 @@ namespace SNShien.Common.MonoBehaviorTools
     public class InSceneViewInfo
     {
         public ViewState CurrentViewState { get; private set; }
-        public IArchitectureView View { get; }
+        public ArchitectureView View { get; }
 
-        public InSceneViewInfo(IArchitectureView view = null)
+        public InSceneViewInfo(ArchitectureView view = null)
         {
             CurrentViewState = ViewState.NotExist;
             View = view;

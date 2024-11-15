@@ -5,6 +5,6 @@ namespace SNShien.Common.MonoBehaviorTools
     public interface IViewManager : IArchitectureModel
     {
         void ClearAllView();
-        void OpenView<T>(params object[] parameters) where T : IArchitectureView;
+        void OpenView<T>(params object[] parameters) where T : ArchitectureView;
     }
 }

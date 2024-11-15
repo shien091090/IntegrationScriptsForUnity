@@ -23,10 +23,11 @@ namespace SNShien.Common.MonoBehaviorTools
         private readonly Dictionary<Type, InSceneViewInfo> viewStateDict = new Dictionary<Type, InSceneViewInfo>();
         private readonly Debugger debugger = new Debugger(DEBUGGER_KEY);
 
-        private Dictionary<Type, GameObject> viewPrefabDict = new Dictionary<Type, GameObject>();
+        private Dictionary<Type, ArchitectureView> viewPrefabDict = new Dictionary<Type, ArchitectureView>();
+        private Dictionary<Type, int> viewSortOrderDict = new Dictionary<Type, int>();
         private bool isInit;
 
-        public void OpenView<T>(params object[] parameters) where T : IArchitectureView
+        public void OpenView<T>(params object[] parameters) where T : ArchitectureView
         {
             ViewState currentViewState = GetCurrentViewState<T>();
             switch (currentViewState)
@@ -41,10 +42,12 @@ namespace SNShien.Common.MonoBehaviorTools
 
                 case ViewState.NotExist:
                     {
-                        if (viewPrefabDict.TryGetValue(typeof(T), out GameObject prefab) == false)
+                        if (viewPrefabDict.TryGetValue(typeof(T), out ArchitectureView prefab) == false)
                             return;
 
-                        CreateNewView<T>(prefab).OpenView(parameters);
+                        ArchitectureView view = CreateNewView<T>(prefab.gameObject);
+                        view.SetCanvasSortOrder(GetViewSortOrder<T>());
+                        view.OpenView(parameters);
                         SetViewState<T>(ViewState.Opened);
                         break;
                     }
@@ -84,11 +87,6 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
-        private void Awake()
-        {
-            Init();
-        }
-
         private void Init()
         {
             if (isInit)
@@ -101,20 +99,34 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private void InitViewPrefabDict()
         {
-            viewPrefabDict = new Dictionary<Type, GameObject>();
-            foreach (GameObject prefab in viewPrefabSetting.GetPrefabList)
+            viewPrefabDict = new Dictionary<Type, ArchitectureView>();
+
+            List<ArchitectureView> prefabList = new List<ArchitectureView>();
+            prefabList.AddRange(viewPrefabSetting.GetPrefabList);
+
+            foreach (ArchitectureView viewPrefab in prefabList)
             {
-                IArchitectureView view = prefab.GetComponent<IArchitectureView>();
-                if (view == null)
-                    debugger.ShowLog($"Prefab {prefab.name} doesn't have IArchitectureView component.");
-                else
-                    viewPrefabDict[view.GetType()] = prefab;
+                viewPrefabDict[viewPrefab.GetType()] = viewPrefab;
+            }
+
+            prefabList.Reverse();
+            int sortOrder = 0;
+            foreach (ArchitectureView viewPrefab in prefabList)
+            {
+                viewSortOrderDict[viewPrefab.GetType()] = sortOrder;
+                sortOrder += 10;
             }
 
             PrintInitViewPrefabDictLog();
         }
 
-        private IArchitectureView GetViewInstance<T>() where T : IArchitectureView
+        private int GetViewSortOrder<T>() where T : ArchitectureView
+        {
+            viewSortOrderDict.TryGetValue(typeof(T), out int sortOrder);
+            return sortOrder;
+        }
+
+        private ArchitectureView GetViewInstance<T>() where T : ArchitectureView
         {
             if (viewStateDict.ContainsKey(typeof(T)))
                 return viewStateDict[typeof(T)].View;
@@ -125,7 +137,7 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
-        private ViewState GetCurrentViewState<T>() where T : IArchitectureView
+        private ViewState GetCurrentViewState<T>() where T : ArchitectureView
         {
             if (viewStateDict.ContainsKey(typeof(T)))
                 return viewStateDict[typeof(T)].CurrentViewState;
@@ -136,7 +148,7 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
-        private void SetViewState<T>(ViewState state) where T : IArchitectureView
+        private void SetViewState<T>(ViewState state) where T : ArchitectureView
         {
             if (viewStateDict.TryGetValue(typeof(T), out InSceneViewInfo viewInfo))
                 viewInfo.SetState(state);
@@ -150,6 +162,11 @@ namespace SNShien.Common.MonoBehaviorTools
             {
                 eventRegister.Register<SwitchSceneEvent>(OnSwitchSceneEvent);
             }
+        }
+
+        private void Awake()
+        {
+            Init();
         }
 
         private void PrintInitViewPrefabDictLog()
@@ -168,7 +185,7 @@ namespace SNShien.Common.MonoBehaviorTools
             debugger.ShowLog($"InitViewPrefabDict, view prefab list count: {viewPrefabNameList.Count}, list:\n{log}");
         }
 
-        private IArchitectureView CreateNewView<T>(GameObject prefab) where T : IArchitectureView
+        private ArchitectureView CreateNewView<T>(GameObject prefab) where T : ArchitectureView
         {
             GameObject newGo = gameObjectSpawner == null ?
                 Instantiate(prefab, viewHolder) :
@@ -176,7 +193,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
             debugger.ShowLog($"CreateNewView, prefab: {prefab.name}, isUseGameObjectSpawner: {gameObjectSpawner != null}");
 
-            IArchitectureView view = newGo.GetComponent<IArchitectureView>();
+            ArchitectureView view = newGo.GetComponent<ArchitectureView>();
             viewStateDict[typeof(T)] = new InSceneViewInfo(view);
 
             return view;
