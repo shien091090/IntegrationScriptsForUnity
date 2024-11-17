@@ -12,6 +12,7 @@ namespace GameCore
     {
         [InjectOptional] private IViewManager viewManager;
         [SerializeField] private AutoSortingOrderMode autoSortingOrderMode;
+        [SerializeField] private ParticleLifeMode particleLifeMode;
 
         [SerializeField] [ShowIf("@autoSortingOrderMode!=AutoSortingOrderMode.Inactive")]
         private ArchitectureView canvasSourceView;
@@ -71,19 +72,13 @@ namespace GameCore
 
         private void OnEnable()
         {
-            StartCoroutine(Cor_AutoHide());
+            if (particleLifeMode == ParticleLifeMode.HideWhenParticleEnd)
+                StartCoroutine(Cor_AutoHide());
         }
 
         private void OnDisable()
         {
             StopAllCoroutines();
         }
-    }
-
-    public enum AutoSortingOrderMode
-    {
-        Inactive,
-        AboveSourceView,
-        BelowSourceView
     }
 }
