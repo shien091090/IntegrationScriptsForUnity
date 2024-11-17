@@ -46,8 +46,6 @@ namespace SNShien.Common.MonoBehaviorTools
                             return;
 
                         ArchitectureView view = CreateNewView<T>(prefab.gameObject);
-                        view.InitCanvasRenderModeSetting();
-                        view.SetCanvasSortOrder(GetViewSortOrder<T>());
                         view.OpenView(parameters);
                         SetViewState<T>(ViewState.Opened);
                         break;
@@ -88,6 +86,17 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
+        public int GetViewSortOrder<T>() where T : ArchitectureView
+        {
+            return GetViewSortOrder(typeof(T));
+        }
+
+        public int GetViewSortOrder(Type type)
+        {
+            viewSortOrderDict.TryGetValue(type, out int sortOrder);
+            return sortOrder;
+        }
+
         private void Init()
         {
             if (isInit)
@@ -119,12 +128,6 @@ namespace SNShien.Common.MonoBehaviorTools
             }
 
             PrintInitViewPrefabDictLog();
-        }
-
-        private int GetViewSortOrder<T>() where T : ArchitectureView
-        {
-            viewSortOrderDict.TryGetValue(typeof(T), out int sortOrder);
-            return sortOrder;
         }
 
         private ArchitectureView GetViewInstance<T>() where T : ArchitectureView
@@ -196,6 +199,9 @@ namespace SNShien.Common.MonoBehaviorTools
 
             ArchitectureView view = newGo.GetComponent<ArchitectureView>();
             viewStateDict[typeof(T)] = new InSceneViewInfo(view);
+
+            view.InitCanvasRenderModeSetting();
+            view.CanvasSortOrder = GetViewSortOrder<T>();
 
             return view;
         }

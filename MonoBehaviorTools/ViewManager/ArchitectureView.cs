@@ -6,6 +6,21 @@ namespace SNShien.Common.MonoBehaviorTools
     {
         private Canvas canvas;
 
+        public int CanvasSortOrder
+        {
+            get
+            {
+                return Canvas == null ?
+                    0 :
+                    Canvas.sortingOrder;
+            }
+            set
+            {
+                if (Canvas != null)
+                    Canvas.sortingOrder = value;
+            }
+        }
+
         private Canvas Canvas
         {
             get
@@ -19,13 +34,11 @@ namespace SNShien.Common.MonoBehaviorTools
 
         public void InitCanvasRenderModeSetting()
         {
+            if (Canvas == null)
+                return;
+
             Canvas.renderMode = RenderMode.ScreenSpaceCamera;
             Canvas.worldCamera = Camera.main;
-        }
-
-        public void SetCanvasSortOrder(int sortOrder)
-        {
-            Canvas.sortingOrder = sortOrder;
         }
 
         public abstract void UpdateView();
