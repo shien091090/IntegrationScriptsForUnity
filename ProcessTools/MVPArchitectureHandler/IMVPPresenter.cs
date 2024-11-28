@@ -4,5 +4,6 @@
     {
         void BindModel(IMVPModel model);
         void BindView(IMVPView mvpView);
+        void UnbindView();
     }
 }
