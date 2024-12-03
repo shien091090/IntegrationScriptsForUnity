@@ -34,7 +34,7 @@ namespace GameCore
 
             mvpDataDict[mvpModel.GetHashCode()] = (mvpModel, mvpPresenter, mvpView);
 
-            PrintCurrentDictStateLog();
+            // PrintCurrentDictStateLog();
         }
 
         public void RebindView(IMVPModel mvpModel, IMVPView newMvpView)
@@ -48,7 +48,7 @@ namespace GameCore
             oldMvpData.presenter.BindView(newMvpView);
             newMvpView.BindPresenter(oldMvpData.presenter);
 
-            PrintCurrentDictStateLog();
+            // PrintCurrentDictStateLog();
         }
 
         private void PrintCurrentDictStateLog()
