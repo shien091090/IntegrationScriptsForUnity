@@ -2,6 +2,6 @@
 {
     public interface IMVPModel
     {
-        void BindPresenter(IMVPPresenter presenter);
+        void BindPresenter(IMVPPresenter mvpPresenter);
     }
 }
