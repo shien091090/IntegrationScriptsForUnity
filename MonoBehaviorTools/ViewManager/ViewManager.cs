@@ -201,6 +201,7 @@ namespace SNShien.Common.MonoBehaviorTools
             viewStateDict[typeof(T)] = new InSceneViewInfo(view);
 
             view.InitCanvasRenderModeSetting();
+            view.InitSafeAreaSetting();
             view.CanvasSortOrder = GetViewSortOrder<T>();
 
             return view;

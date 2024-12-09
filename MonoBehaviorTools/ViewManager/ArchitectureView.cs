@@ -1,9 +1,13 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
-    public abstract class ArchitectureView : MonoBehaviour
+    public abstract class ArchitectureView : SerializedMonoBehaviour
     {
+        [SerializeField] private bool isAutoResponsiveBySafeArea;
+        [ShowIf("isAutoResponsiveBySafeArea")] [SerializeField] private RectTransform safeAreaRectRoot;
+
         private Canvas canvas;
 
         public int CanvasSortOrder
@@ -39,6 +43,25 @@ namespace SNShien.Common.MonoBehaviorTools
 
             Canvas.renderMode = RenderMode.ScreenSpaceCamera;
             Canvas.worldCamera = Camera.main;
+        }
+
+        public void InitSafeAreaSetting()
+        {
+            if (isAutoResponsiveBySafeArea == false)
+                return;
+
+            Rect safeArea = Screen.safeArea;
+
+            Vector2 anchorMin = safeArea.position;
+            Vector2 anchorMax = safeArea.position + safeArea.size;
+
+            anchorMin.x /= Screen.width;
+            anchorMin.y /= Screen.height;
+            anchorMax.x /= Screen.width;
+            anchorMax.y /= Screen.height;
+
+            safeAreaRectRoot.anchorMin = anchorMin;
+            safeAreaRectRoot.anchorMax = anchorMax;
         }
 
         public abstract void UpdateView();
