@@ -5,7 +5,8 @@ namespace SNShien.Common.MonoBehaviorTools
 {
     public interface IGameObjectPool
     {
-        GameObject SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default);
-        T SpawnGameObject<T>(string prefabName, Vector3 position = default, Vector3 scale = default) where T : Component;
+        GameObject SpawnGameObject(string prefabName);
+        T SpawnGameObjectAndSetPosition<T>(string prefabName, Vector3 position, TransformType transformType) where T : Component;
+        GameObject SpawnGameObjectAndSetPosition(string prefabName, Vector3 position, TransformType transformType);
     }
 }

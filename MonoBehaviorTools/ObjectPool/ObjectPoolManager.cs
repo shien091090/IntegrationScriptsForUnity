@@ -13,7 +13,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private Dictionary<string, ObjectPoolUnit> objectPoolTagDict; //(字典)從物件名稱查找ObjectPoolUnit
 
-        public GameObject SpawnGameObject(string prefabName, Vector3 position = default, Vector3 scale = default)
+        public GameObject SpawnGameObject(string prefabName)
         {
             if (objectPoolTagDict.ContainsKey(prefabName) == false)
                 return null;
@@ -21,19 +21,13 @@ namespace SNShien.Common.MonoBehaviorTools
             CheckAutoCreateHolder(prefabName);
             GameObject go = PickUpObject(prefabName);
 
-            if (position != default)
-                go.transform.position = position;
-
-            if (scale != default)
-                go.transform.localScale = scale;
-
             go.SetActive(true);
             return go;
         }
 
-        public T SpawnGameObject<T>(string prefabName, Vector3 position = default, Vector3 scale = default) where T : Component
+        public T SpawnGameObjectAndSetPosition<T>(string prefabName, Vector3 position, TransformType transformType) where T : Component
         {
-            GameObject go = SpawnGameObject(prefabName, position, scale);
+            GameObject go = SpawnGameObjectAndSetPosition(prefabName, position, transformType);
             return go.GetComponent<T>();
         }
 
@@ -50,6 +44,23 @@ namespace SNShien.Common.MonoBehaviorTools
 
                 objectPoolTagDict.Add(objectPoolSetting[i].gameObjectName, objectPoolSetting[i]); //建立字典
             }
+        }
+
+        public GameObject SpawnGameObjectAndSetPosition(string prefabName, Vector3 position, TransformType transformType)
+        {
+            GameObject go = SpawnGameObject(prefabName);
+            switch (transformType)
+            {
+                case TransformType.World:
+                    go.transform.position = position;
+                    break;
+
+                case TransformType.Local:
+                    go.transform.localPosition = position;
+                    break;
+            }
+
+            return go;
         }
 
         //從物件池中取得指定物件
@@ -124,5 +135,11 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             Init();
         }
+    }
+
+    public enum TransformType
+    {
+        World,
+        Local
     }
 }
