@@ -1,4 +1,5 @@
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -6,38 +7,64 @@ using UnityEditor;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
+    [RequireComponent(typeof(RectTransform))]
     public class RandomPositionInRect : MonoBehaviour
     {
         [SerializeField] private bool isShowEditorDrawer;
-        [SerializeField] private Vector2 rectMin = new Vector2(-1, -1);
-        [SerializeField] private Vector2 rectMax = new Vector2(1, 1);
         [SerializeField] private Color rectColor = Color.green;
+        [SerializeField] private float outlineWidth = 5;
 
-        public bool IsShowEditorDrawer => isShowEditorDrawer;
-        public Vector3 RectMin => rectMin;
-        public Vector3 RectMax => rectMax;
-        public Color RectColor => rectColor;
+        private RectTransform rectTransform;
+
+        private RectTransform RectTransform
+        {
+            get
+            {
+                if (rectTransform == null)
+                    rectTransform = gameObject.GetComponent<RectTransform>();
+
+                return rectTransform;
+            }
+        }
 
         public Vector3 GetRandomPosition()
         {
+            Vector2 rectMin = RectTransform.rect.min;
+            Vector2 rectMax = RectTransform.rect.max;
             float x = Random.Range(rectMin.x, rectMax.x);
             float y = Random.Range(rectMin.y, rectMax.y);
             return new Vector3(x, y, 0);
         }
 
-        public void SetRect(Vector2 newRectMin, Vector2 newRectMax)
+        public Vector3 GetRandomLocalPosition()
         {
-            rectMin = newRectMin;
-            rectMax = newRectMax;
+            float halfSizeDeltaX = RectTransform.sizeDelta.x / 2;
+            float halfSizeDeltaY = RectTransform.sizeDelta.y / 2;
+            float x = Random.Range(-halfSizeDeltaX, halfSizeDeltaX);
+            float y = Random.Range(-halfSizeDeltaY, halfSizeDeltaY);
+            return new Vector3(x, y, 0);
         }
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            Gizmos.color = rectColor;
-            Vector3 size = new Vector3(rectMax.x - rectMin.x, rectMax.y - rectMin.y, 0);
-            Vector3 center = new Vector3((rectMin.x + rectMax.x) / 2, (rectMin.y + rectMax.y) / 2, 0);
-            Gizmos.DrawWireCube(center, size);
+            if (isShowEditorDrawer == false)
+                return;
+
+            Vector3[] corners = new Vector3[4];
+            RectTransform.GetWorldCorners(corners);
+            Vector3[] rectCorners = new Vector3[5];
+            for (int i = 0; i < 4; i++)
+            {
+                rectCorners[i] = corners[i];
+            }
+
+            rectCorners[4] = corners[0];
+            for (int i = 0; i < 4; i++)
+            {
+                Handles.color = rectColor;
+                Handles.DrawAAPolyLine(outlineWidth, rectCorners[i], rectCorners[i + 1]);
+            }
         }
 # endif
     }
