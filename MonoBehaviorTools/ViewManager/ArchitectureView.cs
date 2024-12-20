@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using SNShien.Common.TesterTools;
 using UnityEngine;
 
 namespace SNShien.Common.MonoBehaviorTools
@@ -9,6 +10,8 @@ namespace SNShien.Common.MonoBehaviorTools
         [ShowIf("isAutoResponsiveBySafeArea")] [SerializeField] private RectTransform safeAreaRectRoot;
 
         private Canvas canvas;
+
+        private readonly Debugger debugger = new Debugger("ArchitectureView");
 
         public int CanvasSortOrder
         {
@@ -47,6 +50,13 @@ namespace SNShien.Common.MonoBehaviorTools
 
         public void InitSafeAreaSetting()
         {
+            InitSafeAreaSetting(Screen.width, Screen.height);
+        }
+
+        public void InitSafeAreaSetting(int screenWidth, int screenHeight)
+        {
+            debugger.ShowLog($"Screen.width: {Screen.width}, Screen.height: {Screen.height}", true);
+            
             if (isAutoResponsiveBySafeArea == false)
                 return;
 
@@ -55,10 +65,10 @@ namespace SNShien.Common.MonoBehaviorTools
             Vector2 anchorMin = safeArea.position;
             Vector2 anchorMax = safeArea.position + safeArea.size;
 
-            anchorMin.x /= Screen.width;
-            anchorMin.y /= Screen.height;
-            anchorMax.x /= Screen.width;
-            anchorMax.y /= Screen.height;
+            anchorMin.x /= screenWidth;
+            anchorMin.y /= screenHeight;
+            anchorMax.x /= screenWidth;
+            anchorMax.y /= screenHeight;
 
             safeAreaRectRoot.anchorMin = anchorMin;
             safeAreaRectRoot.anchorMax = anchorMax;

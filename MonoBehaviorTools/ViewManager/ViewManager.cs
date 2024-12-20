@@ -27,6 +27,12 @@ namespace SNShien.Common.MonoBehaviorTools
         private Dictionary<Type, int> viewSortOrderDict = new Dictionary<Type, int>();
         private bool isInit;
 
+        public Dictionary<Type, ArchitectureView> ViewPrefabDict
+        {
+            set { viewPrefabDict = value; }
+            get { return viewPrefabDict; }
+        }
+
         public void OpenView<T>(params object[] parameters) where T : ArchitectureView
         {
             ViewState currentViewState = GetCurrentViewState<T>();
@@ -110,23 +116,12 @@ namespace SNShien.Common.MonoBehaviorTools
         private void InitViewPrefabDict()
         {
             viewPrefabDict = new Dictionary<Type, ArchitectureView>();
-
-            List<ArchitectureView> prefabList = new List<ArchitectureView>();
-            prefabList.AddRange(viewPrefabSetting.GetPrefabList);
-
-            foreach (ArchitectureView viewPrefab in prefabList)
+            foreach (ArchitectureView viewPrefab in viewPrefabSetting.GetPrefabList)
             {
-                viewPrefabDict[viewPrefab.GetType()] = viewPrefab;
+                ViewPrefabDict[viewPrefab.GetType()] = viewPrefab;
             }
 
-            prefabList.Reverse();
-            int sortOrder = 0;
-            foreach (ArchitectureView viewPrefab in prefabList)
-            {
-                viewSortOrderDict[viewPrefab.GetType()] = sortOrder;
-                sortOrder += 10;
-            }
-
+            viewSortOrderDict = viewPrefabSetting.GetViewSortOrderDict();
             PrintInitViewPrefabDictLog();
         }
 
