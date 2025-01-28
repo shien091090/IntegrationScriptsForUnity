@@ -10,6 +10,8 @@ namespace SNShien.Common.MonoBehaviorTools
     {
         private const string DEBUGGER_KEY = "OperableUI";
 
+        [SerializeField] private bool autoInitWhenStart;
+        [SerializeField] private bool autoUpdate;
         [SerializeField] private bool isShowDebugLog;
         [SerializeField] private bool enableClick;
         [SerializeField] private bool enableDoubleClick;
@@ -32,6 +34,18 @@ namespace SNShien.Common.MonoBehaviorTools
         public event Action OnDoubleClickEvent;
         public event Action OnStartDragEvent;
         public event Action OnDragOverEvent;
+
+        private void Start()
+        {
+            if (autoInitWhenStart)
+                Init();
+        }
+
+        private void Update()
+        {
+            if (autoUpdate)
+                UpdatePerFrame(Time.deltaTime);
+        }
 
         public void Init()
         {
