@@ -26,7 +26,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private readonly Debugger debugger = new Debugger("TriggerUICrossDetector");
 
-        public event Action OnTriggerCross;
+        public event Action<GameObject> OnTriggerCross;
 
         private bool IsShowDebugHint()
         {
@@ -145,7 +145,7 @@ namespace SNShien.Common.MonoBehaviorTools
                     {
                         SetDebugCrossSuccessHint(true);
 
-                        OnTriggerCross?.Invoke();
+                        OnTriggerCross?.Invoke(target.gameObject);
                     }
                     else
                         SetDebugCrossSuccessHint(false);
