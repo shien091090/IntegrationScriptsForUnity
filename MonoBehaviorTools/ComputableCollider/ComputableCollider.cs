@@ -1,71 +1,52 @@
 using System;
 using System.Linq;
-using SNShien.Common.AdapterTools;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
-    [RequireComponent(typeof(Collider2DAdapterComponent))]
-    public class ComputableTriggerUI : MonoBehaviour, ICollider2DHandler
+    public class ComputableCollider : MonoBehaviour
     {
-        [SerializeField] private bool isShowHighlightHintForTest;
-        [SerializeField] private ComputableUIShapeType shapeType;
+        [SerializeField] private ComputableColliderShapeType shapeType;
+
+        [Header("Debug Hint")] [SerializeField] private bool isShowHighlightHintForTest;
         [SerializeField] private Image img_highlightForTest;
 
-        private Collider2DAdapterComponent collider2D;
         private RectTransform rectTransform;
-        private ComputableTriggerUI currentTrackingTarget;
+        private ComputableCollider currentTrackingTarget;
 
-        public event Action<bool, ComputableTriggerUI> OnChangeTriggeredState;
+        public event Action<bool, ComputableCollider> OnChangeTriggeredState;
 
         public Vector3 Position => RectTransform.position;
         private bool CurrentTriggeredState { get; set; }
-        private ComputableUIShapeType ShapeType => shapeType;
+        private ComputableColliderShapeType ShapeType => shapeType;
         private RectTransform RectTransform => rectTransform;
-
-        public void ColliderTriggerEnter2D(ICollider2DAdapter col)
-        {
-        }
-
-        public void ColliderTriggerExit2D(ICollider2DAdapter col)
-        {
-        }
-
-        public void ColliderTriggerStay2D(ICollider2DAdapter col)
-        {
-            if (currentTrackingTarget != null)
-                return;
-
-            ComputableTriggerUI uiObj = col.GetComponent<ComputableTriggerUI>();
-            if (uiObj == null)
-                return;
-
-            currentTrackingTarget = uiObj;
-            SetTriggeredState(true, currentTrackingTarget);
-        }
-
-        public void CollisionEnter2D(ICollision2DAdapter col)
-        {
-        }
-
-        public void CollisionExit2D(ICollision2DAdapter col)
-        {
-        }
 
         private void Update()
         {
             if (currentTrackingTarget == null)
                 return;
 
-            if (IsInRange(currentTrackingTarget.ShapeType, currentTrackingTarget.RectTransform) == false)
-            {
+            bool isInRange = IsInRange(currentTrackingTarget.ShapeType, currentTrackingTarget.RectTransform);
+            if (isInRange && CurrentTriggeredState == false)
+                SetTriggeredState(true, currentTrackingTarget);
+            else if (isInRange == false && CurrentTriggeredState)
                 SetTriggeredState(false, currentTrackingTarget);
-                currentTrackingTarget = null;
-            }
         }
 
-        private bool IsInRange(ComputableUIShapeType targetShapeType, RectTransform targetRectTransform)
+        public void RemoveTrackingTarget()
+        {
+            SetTriggeredState(false, currentTrackingTarget);
+            currentTrackingTarget = null;
+        }
+
+        public void StartTrackingTarget(ComputableCollider target)
+        {
+            currentTrackingTarget = target;
+            CurrentTriggeredState = false;
+        }
+
+        private bool IsInRange(ComputableColliderShapeType targetShapeType, RectTransform targetRectTransform)
         {
             Vector3[] targetCorners = new Vector3[4];
             targetRectTransform.GetWorldCorners(targetCorners);
@@ -79,25 +60,25 @@ namespace SNShien.Common.MonoBehaviorTools
             float targetCircleRadius = targetRectTransform.sizeDelta.y / 2 * targetRectTransform.lossyScale.y;
             float selfCircleRadius = RectTransform.sizeDelta.y / 2 * RectTransform.lossyScale.y;
 
-            if (targetShapeType == ComputableUIShapeType.Circle)
+            if (targetShapeType == ComputableColliderShapeType.Circle)
             {
                 switch (ShapeType)
                 {
-                    case ComputableUIShapeType.Rectangle:
+                    case ComputableColliderShapeType.Rectangle:
                         return IsCircleRectangleOverlap(targetCenter, targetCircleRadius, selfCorners);
 
-                    case ComputableUIShapeType.Circle:
+                    case ComputableColliderShapeType.Circle:
                         return Vector3.Distance(targetCenter, selfCenter) <= targetCircleRadius + selfCircleRadius;
                 }
             }
-            else if (targetShapeType == ComputableUIShapeType.Rectangle)
+            else if (targetShapeType == ComputableColliderShapeType.Rectangle)
             {
                 switch (ShapeType)
                 {
-                    case ComputableUIShapeType.Rectangle:
+                    case ComputableColliderShapeType.Rectangle:
                         return IsRectangleOverlap(selfCorners, targetCorners);
 
-                    case ComputableUIShapeType.Circle:
+                    case ComputableColliderShapeType.Circle:
                         return IsCircleRectangleOverlap(selfCenter, selfCircleRadius, targetCorners);
                 }
             }
@@ -153,7 +134,7 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
-        private void SetTriggeredState(bool isTriggered, ComputableTriggerUI target)
+        private void SetTriggeredState(bool isTriggered, ComputableCollider target)
         {
             if (CurrentTriggeredState == isTriggered)
                 return;
@@ -173,9 +154,6 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private void Awake()
         {
-            collider2D = GetComponent<Collider2DAdapterComponent>();
-            collider2D.InitHandler(this);
-
             rectTransform = GetComponent<RectTransform>();
         }
 

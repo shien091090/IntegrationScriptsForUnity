@@ -1,6 +1,6 @@
 namespace SNShien.Common.MonoBehaviorTools
 {
-    public enum ComputableUIShapeType
+    public enum ComputableColliderShapeType
     {
         Circle,
         Rectangle

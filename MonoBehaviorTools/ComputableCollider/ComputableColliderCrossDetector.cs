@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 namespace SNShien.Common.MonoBehaviorTools
 {
-    [RequireComponent(typeof(ComputableTriggerUI))]
-    public class TriggerUICrossDetector : MonoBehaviour
+    [RequireComponent(typeof(ComputableCollider))]
+    public class ComputableColliderCrossDetector : MonoBehaviour
     {
         [SerializeField] private float enterAngleBase;
         [SerializeField] private float enterAngleRange;
@@ -20,13 +20,13 @@ namespace SNShien.Common.MonoBehaviorTools
         [SerializeField] private Text txt_exitPosAngle;
         [SerializeField] private GameObject go_crossSuccessHint;
         [SerializeField] private GameObject go_crossFailHint;
-
-        private ComputableTriggerUI computableTriggerUI;
         private bool isStartCross;
 
-        private readonly Debugger debugger = new Debugger("TriggerUICrossDetector");
+        private readonly Debugger debugger = new Debugger("ComputableColliderCrossDetector");
 
         public event Action<GameObject> OnTriggerCross;
+
+        public ComputableCollider ComputableCollider { get; private set; }
 
         private bool IsShowDebugHint()
         {
@@ -38,11 +38,11 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private void SetEventRegister(bool isListen)
         {
-            computableTriggerUI.OnChangeTriggeredState -= OnChangeTriggeredState;
+            ComputableCollider.OnChangeTriggeredState -= OnChangeTriggeredState;
 
             if (isListen)
             {
-                computableTriggerUI.OnChangeTriggeredState += OnChangeTriggeredState;
+                ComputableCollider.OnChangeTriggeredState += OnChangeTriggeredState;
             }
         }
 
@@ -106,7 +106,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private void Awake()
         {
-            computableTriggerUI = GetComponent<ComputableTriggerUI>();
+            ComputableCollider = GetComponent<ComputableCollider>();
             HideAllHint();
             ClearData();
         }
@@ -126,7 +126,7 @@ namespace SNShien.Common.MonoBehaviorTools
             SetEventRegister(true);
         }
 
-        private void OnChangeTriggeredState(bool isTriggered, ComputableTriggerUI target)
+        private void OnChangeTriggeredState(bool isTriggered, ComputableCollider target)
         {
             if (isTriggered)
             {
