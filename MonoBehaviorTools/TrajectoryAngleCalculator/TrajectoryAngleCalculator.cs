@@ -51,6 +51,12 @@ namespace SNShien.Common.MonoBehaviorTools
                 ShowDebugHint();
         }
 
+        public void ClearData()
+        {
+            positionNodeList = new List<Vector3>();
+            currentAngle = 0;
+        }
+
         private float GetTrajectoryAngle()
         {
             Vector3 v1 = positionNodeList[1] - positionNodeList[0];
@@ -85,12 +91,6 @@ namespace SNShien.Common.MonoBehaviorTools
                 positionNodeList.RemoveAt(0);
                 positionNodeList.TrimExcess();
             }
-        }
-
-        private void ClearData()
-        {
-            positionNodeList = new List<Vector3>();
-            currentAngle = 0;
         }
 
         private IEnumerator Cor_AutoRecordPositionNode()
