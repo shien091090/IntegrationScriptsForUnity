@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using SNShien.Common.TesterTools;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace SNShien.Common.MonoBehaviorTools
 {
@@ -24,33 +27,12 @@ namespace SNShien.Common.MonoBehaviorTools
         [SerializeField] [ShowIf("isAutoSetupSortOrderByViewSetting")]
         private ViewPrefabScriptableObject viewSetting;
 
-        private Camera camera;
+        [SerializeField] [ReadOnly] private readonly List<GameObject> currentPrefabsInScene = new List<GameObject>();
 
-        private readonly List<GameObject> currentPrefabsInScene = new List<GameObject>();
+        private Camera camera;
         private readonly Debugger debugger = new Debugger("ScenePrefabPreviewer");
 
         private List<GameObject> GetPrefabList => prefabList;
-
-        [Button("產生Prefab預覽")]
-        public void EditorButton1_CreatePrefabPreview()
-        {
-            SetupCamera();
-            CreatePrefabs();
-            SetupAllCanvas();
-            SetupSafeAreaSetting();
-        }
-
-        [Button("清除Prefab預覽")]
-        public void EditorButton2_ClearPrefabPreview()
-        {
-            foreach (GameObject go in currentPrefabsInScene)
-            {
-                DestroyImmediate(go);
-            }
-
-            currentPrefabsInScene.Clear();
-            previewState = ScenePrefabPreviewState.None;
-        }
 
         private bool CanShowDeviceTypeDropdown()
         {
@@ -112,6 +94,7 @@ namespace SNShien.Common.MonoBehaviorTools
             }
         }
 
+#if UNITY_EDITOR
         private void CreatePrefabs()
         {
             if (previewState == ScenePrefabPreviewState.Previewing)
@@ -127,7 +110,35 @@ namespace SNShien.Common.MonoBehaviorTools
                 currentPrefabsInScene.Add(instance);
             }
 
+            EditorUtility.SetDirty(this);
             previewState = ScenePrefabPreviewState.Previewing;
         }
+
+#endif
+
+#if UNITY_EDITOR
+
+        [Button("產生Prefab預覽")]
+        public void EditorButton1_CreatePrefabPreview()
+        {
+            SetupCamera();
+            CreatePrefabs();
+            SetupAllCanvas();
+            SetupSafeAreaSetting();
+        }
+
+        [Button("清除Prefab預覽")]
+        public void EditorButton2_ClearPrefabPreview()
+        {
+            foreach (GameObject go in currentPrefabsInScene)
+            {
+                DestroyImmediate(go);
+            }
+
+            currentPrefabsInScene.Clear();
+            previewState = ScenePrefabPreviewState.None;
+        }
+
+#endif
     }
 }
