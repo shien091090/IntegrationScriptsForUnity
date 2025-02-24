@@ -11,9 +11,9 @@ namespace SNShien.Common.MonoBehaviorTools
 
         [Header("Debug Hint")] [SerializeField] private bool isShowHighlightHintForTest;
         [SerializeField] private Image img_highlightForTest;
+        [SerializeField] private ComputableCollider currentTrackingTarget;
 
         private RectTransform rectTransform;
-        private ComputableCollider currentTrackingTarget;
 
         public event Action<bool, ComputableCollider> OnChangeTriggeredState;
 

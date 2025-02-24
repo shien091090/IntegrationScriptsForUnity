@@ -6,8 +6,9 @@ using UnityEngine.UI;
 namespace SNShien.Common.MonoBehaviorTools
 {
     [RequireComponent(typeof(ComputableCollider))]
-    public class ComputableColliderCrossDetector : MonoBehaviour
+    public partial class ComputableColliderCrossDetector : MonoBehaviour
     {
+        [SerializeField] private CrossDetectorCondition[] crossDetectorConditions;
         [SerializeField] private float enterAngleBase;
         [SerializeField] private float enterAngleRange;
         [SerializeField] private float exitAngleBase;
