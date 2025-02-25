@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using SNShien.Common.TesterTools;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,20 +9,16 @@ using UnityEngine.UI;
 namespace SNShien.Common.MonoBehaviorTools
 {
     [RequireComponent(typeof(ComputableCollider))]
-    public partial class ComputableColliderCrossDetector : MonoBehaviour
+    public partial class ComputableColliderCrossDetector : SerializedMonoBehaviour 
     {
         [SerializeField] private CrossDetectorCondition[] crossDetectorConditions;
-        [SerializeField] private float enterAngleBase;
-        [SerializeField] private float enterAngleRange;
-        [SerializeField] private float exitAngleBase;
-        [SerializeField] private float exitAngleRange;
 
         [Header("Debug Hint")] [SerializeField] private bool showDebugHint;
         [SerializeField] private GameObject go_enterHint;
         [SerializeField] private GameObject go_exitHint;
         [SerializeField] private Text txt_enterPosAngle;
         [SerializeField] private Text txt_exitPosAngle;
-        [SerializeField] private GameObject go_crossSuccessHint;
+        [SerializeField] private Dictionary<string, GameObject> crossSuccessHintDict;
         [SerializeField] private GameObject go_crossFailHint;
         private bool isStartCross;
 
@@ -35,6 +34,19 @@ namespace SNShien.Common.MonoBehaviorTools
             return false;
 #endif
             return showDebugHint;
+        }
+
+        private void TrySetCrossSuccessHintOpen(string key)
+        {
+            if (crossSuccessHintDict.ContainsKey(key))
+                crossSuccessHintDict[key].gameObject.SetActive(true);
+        }
+
+        private float GetAngle(Vector3 targetPos)
+        {
+            Vector3 targetDir = targetPos - transform.position;
+            float angle = Vector3.SignedAngle(targetDir, transform.right, Vector3.forward);
+            return angle;
         }
 
         private void SetEventRegister(bool isListen)
@@ -71,38 +83,70 @@ namespace SNShien.Common.MonoBehaviorTools
             txt_enterPosAngle.text = angleText;
         }
 
-        private void SetDebugCrossSuccessHint(bool isSuccess)
+        private bool CheckEnterAngleConditions(Vector3 targetPos, out CrossDetectorCondition match)
         {
-            if (IsShowDebugHint() == false)
-                return;
-
-            go_crossSuccessHint.SetActive(isSuccess);
-            go_crossFailHint.SetActive(!isSuccess);
-        }
-
-        private bool CheckEnterAngle(Vector3 targetPos)
-        {
-            Vector3 targetDir = targetPos - transform.position;
-            float angle = Vector3.SignedAngle(targetDir, transform.right, Vector3.forward);
+            match = null;
+            float angle = GetAngle(targetPos);
 
             SetDebugEnterPosHint(targetPos, angle.ToString("0"));
 
-            return Math.Abs(angle) >= enterAngleBase - enterAngleRange && Math.Abs(angle) <= enterAngleBase + enterAngleRange;
+            foreach (CrossDetectorCondition condition in crossDetectorConditions)
+            {
+                if (condition.CheckEnterAngle(angle))
+                    match = condition;
+            }
+
+            debugger.ShowLog($"CheckEnterAngleConditions: {match != null}, angle: {angle}, key: {(match == null ? "null" : match.Key)}");
+            return match != null;
         }
 
-        private bool CheckExitAngle(Vector3 targetPos)
+        private bool CheckExitAngleConditions(Vector3 targetPos, out CrossDetectorCondition match)
         {
-            Vector3 targetDir = targetPos - transform.position;
-            float angle = Vector3.SignedAngle(targetDir, transform.right, Vector3.forward);
+            match = null;
+            float angle = GetAngle(targetPos);
 
             SetDebugExitPosHint(targetPos, angle.ToString("0"));
 
-            return Math.Abs(angle) >= exitAngleBase - exitAngleRange && Math.Abs(angle) <= exitAngleBase + exitAngleRange;
+            foreach (CrossDetectorCondition condition in crossDetectorConditions)
+            {
+                if (condition.CheckExitAngle(angle))
+                    match = condition;
+            }
+
+            debugger.ShowLog($"CheckExitAngleConditions: {match != null}, angle: {angle}, key: {(match == null ? "null" : match.Key)}");
+            return match != null;
         }
 
         private void ClearData()
         {
             isStartCross = false;
+        }
+
+        private void ShowDebugCrossSuccessHint(CrossDetectorCondition conditionInfo)
+        {
+            if (IsShowDebugHint() == false)
+                return;
+
+            HideAllSuccessHint();
+            TrySetCrossSuccessHintOpen(conditionInfo.Key);
+            go_crossFailHint.SetActive(false);
+        }
+
+        private void ShowDebugCrossFailHint()
+        {
+            if (IsShowDebugHint() == false)
+                return;
+
+            HideAllSuccessHint();
+            go_crossFailHint.SetActive(true);
+        }
+
+        private void HideAllSuccessHint()
+        {
+            foreach (GameObject go in crossSuccessHintDict.Values)
+            {
+                go.SetActive(false);
+            }
         }
 
         private void Awake()
@@ -119,7 +163,7 @@ namespace SNShien.Common.MonoBehaviorTools
             go_enterHint.SetActive(false);
             go_exitHint.SetActive(false);
             go_crossFailHint.SetActive(false);
-            go_crossSuccessHint.SetActive(false);
+            HideAllSuccessHint();
         }
 
         private void OnEnable()
@@ -132,24 +176,24 @@ namespace SNShien.Common.MonoBehaviorTools
             if (isTriggered)
             {
                 HideAllHint();
-                if (CheckEnterAngle(target.Position))
+                if (CheckEnterAngleConditions(target.Position, out CrossDetectorCondition match))
                     isStartCross = true;
                 else
-                    SetDebugCrossSuccessHint(false);
+                    ShowDebugCrossFailHint();
             }
             else
             {
-                bool checkExitAngle = CheckExitAngle(target.Position);
+                bool checkExitAngle = CheckExitAngleConditions(target.Position, out CrossDetectorCondition match);
                 if (isStartCross)
                 {
                     if (checkExitAngle)
                     {
-                        SetDebugCrossSuccessHint(true);
+                        ShowDebugCrossSuccessHint(match);
 
                         OnTriggerCross?.Invoke(target.gameObject);
                     }
                     else
-                        SetDebugCrossSuccessHint(false);
+                        ShowDebugCrossFailHint();
                 }
 
                 isStartCross = false;
