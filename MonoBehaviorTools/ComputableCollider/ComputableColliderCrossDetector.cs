@@ -25,7 +25,7 @@ namespace SNShien.Common.MonoBehaviorTools
 
         private readonly Debugger debugger = new Debugger("ComputableColliderCrossDetector");
 
-        public event Action<GameObject> OnTriggerCross;
+        public event Action<GameObject, CrossDetectorCondition> OnTriggerCross;
 
         public ComputableCollider ComputableCollider { get; private set; }
 
@@ -190,7 +190,7 @@ namespace SNShien.Common.MonoBehaviorTools
                     {
                         ShowDebugCrossSuccessHint(currentMatchCondition);
 
-                        OnTriggerCross?.Invoke(target.gameObject);
+                        OnTriggerCross?.Invoke(target.gameObject, currentMatchCondition);
                     }
                     else
                         ShowDebugCrossFailHint();
