@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace SNShien.Common.MonoBehaviorTools
