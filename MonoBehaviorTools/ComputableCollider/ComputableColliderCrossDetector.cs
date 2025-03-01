@@ -149,12 +149,15 @@ namespace SNShien.Common.MonoBehaviorTools
         private void Awake()
         {
             ComputableCollider = GetComponent<ComputableCollider>();
-            HideAllHint();
+            HideAllDebugHint();
             ClearData();
         }
 
-        private void HideAllHint()
+        private void HideAllDebugHint()
         {
+            if (IsShowDebugHint() == false)
+                return;
+
             txt_enterPosAngle.gameObject.SetActive(false);
             txt_exitPosAngle.gameObject.SetActive(false);
             go_enterHint.SetActive(false);
@@ -172,7 +175,7 @@ namespace SNShien.Common.MonoBehaviorTools
         {
             if (isTriggered)
             {
-                HideAllHint();
+                HideAllDebugHint();
                 if (CheckEnterAngleConditions(target.Position, out CrossDetectorCondition match))
                 {
                     isStartCross = true;
