@@ -91,16 +91,16 @@ namespace SNShien.Common.MonoBehaviorTools
             RecordAngle3Pos(out float trajectoryAngle);
             RecordIdleTime(out float idleTime);
 
-            // if (isTestMode)
-            // {
-            //     HideAllDebugHint();
-            //     
-            //     allPositionRecordList.Add(transform.position);
-            //     ShowDebugLine(allPositionRecordList);
-            //
-            //     if (trajectoryAngle >= 0)
-            //         ShowCurrentAngle(trajectoryAngle);
-            // }
+            if (isTestMode)
+            {
+                HideAllDebugHint();
+                
+                allPositionRecordList.Add(transform.position);
+                ShowDebugLine(allPositionRecordList);
+            
+                if (trajectoryAngle >= 0)
+                    ShowDebugAngleHint(trajectoryAngle);
+            }
 
             AddNodeResult result = new AddNodeResult(positionNodeList, localPositionNodeList, trajectoryAngle, idleTime, totalTimer);
             return result;
