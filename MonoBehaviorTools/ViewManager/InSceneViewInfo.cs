@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 namespace SNShien.Common.MonoBehaviorTools
 {
     public class InSceneViewInfo
@@ -17,3 +18,4 @@ namespace SNShien.Common.MonoBehaviorTools
         }
     }
 }
+#endif

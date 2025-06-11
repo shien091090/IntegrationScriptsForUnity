@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -205,3 +206,4 @@ namespace SNShien.Common.MonoBehaviorTools
         }
     }
 }
+#endif

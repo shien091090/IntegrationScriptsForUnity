@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System.Collections.Generic;
 
 namespace SNShien.Common.ProcessTools
@@ -7,3 +8,4 @@ namespace SNShien.Common.ProcessTools
         SceneProcessSetting GetSceneProcessSetting();
     }
 }
+#endif

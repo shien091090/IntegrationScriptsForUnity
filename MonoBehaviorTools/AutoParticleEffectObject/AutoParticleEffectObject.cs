@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN && CUSTOM_USING_ZENJECT
 using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
@@ -82,3 +83,4 @@ namespace GameCore
         }
     }
 }
+#endif

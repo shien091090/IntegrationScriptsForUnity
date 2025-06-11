@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ZENJECT
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -101,3 +102,4 @@ namespace SNShien.Common.ProcessTools
         }
     }
 }
+#endif

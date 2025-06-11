@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ZENJECT
 using UnityEngine;
 using Zenject;
 
@@ -21,3 +22,4 @@ namespace SNShien.Common.AdapterTools
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using Sirenix.OdinInspector;
 using SNShien.Common.TesterTools;
 using UnityEngine;
@@ -80,3 +81,4 @@ namespace SNShien.Common.MonoBehaviorTools
         public abstract void CloseView();
     }
 }
+#endif

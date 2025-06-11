@@ -1,3 +1,4 @@
+#if CUSTOM_USING_DOTWEEN
 using System;
 using DG.Tweening;
 using UnityEngine;
@@ -20,3 +21,4 @@ namespace SNShien.Common.TimeTools
         }
     }
 }
+#endif

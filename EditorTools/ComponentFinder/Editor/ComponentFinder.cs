@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if CUSTOM_USING_ODIN
+using System.Collections.Generic;
 using System;
 using System.Reflection;
 using System.Linq;
@@ -304,3 +305,4 @@ public class ComponentFinder : EditorWindow
     }
 
 }
+#endif

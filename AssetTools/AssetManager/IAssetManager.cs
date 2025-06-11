@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ADDRESSABLE
 using System;
 using Object = UnityEngine.Object;
 
@@ -12,3 +13,4 @@ namespace SNShien.Common.AssetTools
         void StartPrecedingProcedures();
     }
 }
+#endif

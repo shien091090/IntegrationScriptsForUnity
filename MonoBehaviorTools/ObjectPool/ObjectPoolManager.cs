@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if CUSTOM_USING_ZENJECT
+using System.Collections.Generic;
 using SNShien.Common.AdapterTools;
 using UnityEngine;
 using Zenject;
@@ -143,3 +144,4 @@ namespace SNShien.Common.MonoBehaviorTools
         Local
     }
 }
+#endif

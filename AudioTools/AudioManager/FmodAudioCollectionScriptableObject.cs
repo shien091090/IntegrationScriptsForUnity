@@ -1,3 +1,4 @@
+#if CUSTOM_USING_FMOD
 using System.Collections.Generic;
 using System.Linq;
 using FMODUnity;
@@ -21,3 +22,4 @@ namespace SNShien.Common.AudioTools
         }
     }
 }
+#endif

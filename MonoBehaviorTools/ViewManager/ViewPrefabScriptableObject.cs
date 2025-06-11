@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,3 +31,4 @@ namespace SNShien.Common.MonoBehaviorTools
         }
     }
 }
+#endif

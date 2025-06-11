@@ -1,3 +1,4 @@
+#if CUSTOM_USING_FMOD
 using FMOD.Studio;
 using FMODUnity;
 
@@ -17,3 +18,4 @@ namespace SNShien.Common.AudioTools
         void PlayOneShot(EventReference eventReference);
     }
 }
+#endif

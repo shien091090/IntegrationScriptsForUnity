@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ZENJECT && CUSTOM_USING_ADDRESSABLE
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -175,3 +176,4 @@ namespace SNShien.Common.AssetTools
         }
     }
 }
+#endif

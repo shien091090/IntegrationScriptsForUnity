@@ -1,3 +1,4 @@
+#if CUSTOM_USING_FMOD
 using System.Collections.Generic;
 using FMODUnity;
 using UnityEngine;
@@ -17,3 +18,4 @@ namespace SNShien.Common.AudioTools
             audioEventReferences[Random.Range(0, audioEventReferences.Count)];
     }
 }
+#endif

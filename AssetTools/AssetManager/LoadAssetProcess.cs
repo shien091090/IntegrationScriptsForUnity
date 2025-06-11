@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ADDRESSABLE
 using System;
 using System.Collections.Generic;
 using SNShien.Common.TesterTools;
@@ -172,3 +173,4 @@ namespace SNShien.Common.AssetTools
         }
     }
 }
+#endif

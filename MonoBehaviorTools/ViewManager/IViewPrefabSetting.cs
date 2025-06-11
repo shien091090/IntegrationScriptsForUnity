@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System;
 using System.Collections.Generic;
 
@@ -9,3 +10,4 @@ namespace SNShien.Common.MonoBehaviorTools
         Dictionary<Type, int> GetViewSortOrderDict();
     }
 }
+#endif

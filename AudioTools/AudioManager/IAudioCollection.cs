@@ -1,3 +1,4 @@
+#if CUSTOM_USING_FMOD
 using System.Collections.Generic;
 using FMODUnity;
 
@@ -10,3 +11,4 @@ namespace SNShien.Common.AudioTools
         EventReference GetEventReference(string audioKey);
     }
 }
+#endif

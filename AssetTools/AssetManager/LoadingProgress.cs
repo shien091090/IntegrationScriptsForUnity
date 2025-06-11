@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ADDRESSABLE
 using UnityEngine;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
@@ -41,3 +42,4 @@ namespace SNShien.Common.AssetTools
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ZENJECT
 using SNShien.Common.ProcessTools;
 using UnityEngine;
 
@@ -10,3 +11,4 @@ namespace SNShien.Common.MonoBehaviorTools
         GameObject SpawnGameObjectAndSetPosition(string prefabName, Vector3 position, TransformType transformType);
     }
 }
+#endif

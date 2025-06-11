@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System;
 using SNShien.Common.ProcessTools;
 
@@ -11,3 +12,4 @@ namespace SNShien.Common.MonoBehaviorTools
         void OpenView<T>(params object[] parameters) where T : ArchitectureView;
     }
 }
+#endif

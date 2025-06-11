@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -17,3 +18,4 @@ namespace SNShien.Common.ProcessTools
         public string GetSceneBundlePath => sceneBundlePath;
     }
 }
+#endif

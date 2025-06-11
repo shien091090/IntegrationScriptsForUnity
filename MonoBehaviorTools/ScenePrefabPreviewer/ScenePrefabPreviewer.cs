@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
@@ -142,3 +143,4 @@ namespace SNShien.Common.MonoBehaviorTools
 #endif
     }
 }
+#endif

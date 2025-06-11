@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN && CUSTOM_USING_ADDRESSABLE && CUSTOM_USING_ZENJECT
 using System;
 using System.Linq;
 using Sirenix.OdinInspector;
@@ -111,3 +112,4 @@ namespace SNShien.Common.ProcessTools
         }
     }
 }
+#endif

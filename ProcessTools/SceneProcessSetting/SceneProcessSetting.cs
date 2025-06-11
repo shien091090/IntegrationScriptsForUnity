@@ -1,3 +1,4 @@
+#if CUSTOM_USING_ODIN
 using System.Linq;
 
 namespace SNShien.Common.ProcessTools
@@ -41,3 +42,4 @@ namespace SNShien.Common.ProcessTools
         }
     }
 }
+#endif

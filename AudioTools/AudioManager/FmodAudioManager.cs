@@ -1,3 +1,4 @@
+#if CUSTOM_USING_FMOD && CUSTOM_USING_ZENJECT
 using System;
 using System.Collections.Generic;
 using FMOD;
@@ -227,3 +228,4 @@ namespace SNShien.Common.AudioTools
         }
     }
 }
+#endif
