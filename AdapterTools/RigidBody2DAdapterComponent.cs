@@ -16,16 +16,16 @@ namespace SNShien.Common.AdapterTools
             set => GetRigidbody.velocity = value;
         }
 
-        private Rigidbody2D rigidbody;
+        private Rigidbody2D rigidbodyComponent;
 
         private Rigidbody2D GetRigidbody
         {
             get
             {
-                if (rigidbody == null)
-                    rigidbody = GetComponent<Rigidbody2D>();
+                if (rigidbodyComponent == null)
+                    rigidbodyComponent = GetComponent<Rigidbody2D>();
 
-                return rigidbody;
+                return rigidbodyComponent;
             }
         }
 
