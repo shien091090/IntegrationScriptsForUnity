@@ -12,8 +12,8 @@ namespace SNShien.Common.AdapterTools
 
         public Vector2 velocity
         {
-            get => GetRigidbody.velocity;
-            set => GetRigidbody.velocity = value;
+            get => GetRigidbody.linearVelocity;
+            set => GetRigidbody.linearVelocity = value;
         }
 
         private Rigidbody2D rigidbodyComponent;
